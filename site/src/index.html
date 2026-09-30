@@ -11,16 +11,18 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
 <style>
 :root {
   color-scheme: light;
   --ink: #16243a;
   --muted: #5b6778;
   --faint: #8993a1;
-  --line: #d9dfe7;
-  --paper: #ffffff;
-  --sheet: #f6f8fb;
+  --line: #e2dbce;
+  --paper: #faf8f3;
+  --sheet: #fffdf9;
+  --rule: #d9d1c2;
+  --serif: "Source Serif 4", Georgia, serif;
   --fact: #e9f0f7;
   --appr: #fff3c4;
   --stamp: #5a3e8e;
@@ -168,6 +170,53 @@ footer p { margin: 4px 0; }
   ol.seq li .out { grid-column: 2; justify-self: start; }
   ol.seq li .what { grid-column: 2; }
 }
+
+/* report pass */
+h1, .addr, .key .big, .panel h2, section.run h2, section.notes h2, .proof h3, .ev .who, .row .val, .next {
+  font-family: var(--serif); font-feature-settings: "tnum" 1, "lnum" 1;
+}
+h1 { font-weight: 600; letter-spacing: -0.01em; }
+.lead { font-size: 16.5px; }
+.sheet { background: var(--sheet); border: 1px solid #cbc2b1; border-radius: 0; box-shadow: 4px 4px 0 #ece6da; }
+.sheethead { border-bottom: 3px double var(--ink); padding-bottom: 20px; display: block; position: relative; }
+.sheethead > div:first-child { max-width: 57%; }
+.sheethead .stamp { position: absolute; right: 14px; top: 40px; }
+.addr { font-weight: 600; font-size: 25px; letter-spacing: -0.005em; }
+.key .big { font-weight: 600; font-size: clamp(21px, 1.9vw, 27px); letter-spacing: 0; }
+.keys { border-bottom: 1px solid var(--rule); }
+.key + .key { border-left: 1px solid var(--rule); }
+.key[aria-pressed="true"], .row[aria-pressed="true"] { background: #f3eff8; }
+.row + .row { border-top: 1px solid #ebe4d7; }
+.row:hover, .key:hover { background: #f6f2ea; }
+.row .val { font-size: 18px; }
+.row.long .val { font-size: 16px; line-height: 1.5; }
+.stamp {
+  color: #4a2f86; border: 2px solid currentColor; outline: 1px solid currentColor; outline-offset: 3px; background: transparent;
+  transform: rotate(-3deg); transform-origin: center; mix-blend-mode: multiply; opacity: .88; filter: url(#ink);
+  padding: 6px 11px 7px; margin: 10px 10px 0 0; text-align: center; font-size: 11.5px; border-radius: 3px;
+}
+.stamp strong { font-family: var(--serif); font-size: 14.5px; font-weight: 700; letter-spacing: .01em; }
+.panel h2 { font-weight: 600; font-size: 30px; }
+.ev .who { font-size: 17px; font-weight: 600; }
+.ev blockquote { background: #f1f4f8; border-left: 2px solid #9fb2c8; border-radius: 0; font-family: var(--serif); font-size: 16px; }
+.ev.conflict blockquote { background: #fdf4d6; border-left-color: #d6b54d; }
+.ev.rejected blockquote { border-left-color: #c9776d; }
+.ev img { border-color: var(--rule); }
+.cellmap th { background: #f1ede5; }
+.cellmap th, .cellmap td { border-color: #d6cfc2; }
+.calc { border: 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); border-radius: 0; padding: 12px 2px; }
+section.run, section.notes, footer, .held li button { border-top-color: var(--rule); }
+section.run h2, section.notes h2 { font-weight: 600; font-size: 32px; }
+ol.seq li { border-top-color: var(--rule); }
+.out { border-radius: 0; font-weight: 500; }
+.next { font-size: 20px; }
+@media (max-width: 900px) {
+  .sheet { box-shadow: 3px 3px 0 #ece6da; }
+  .sheethead > div:first-child { max-width: none; }
+  .sheethead .stamp { position: static; display: inline-block; margin: 14px 0 0 4px; }
+  .key .big { font-size: 17px; }
+  .addr { font-size: 23px; }
+}
 @media (prefers-reduced-motion: no-preference) {
   .panel.swap { animation: settle .28s ease-out; }
   @keyframes settle { from { opacity: .35; } to { opacity: 1; } }
@@ -175,6 +224,7 @@ footer p { margin: 4px 0; }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="ink"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.6"/></filter></svg>
 <header class="doc">
   <div class="wrap">
     <h1>One Pennsylvania sale, traced</h1>

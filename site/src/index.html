@@ -337,13 +337,13 @@ function evidenceHTML(e) {
   return `<div class="ev ${cls}">${lead}<div class="who">${esc(s.name)}</div><div class="kind">${esc(s.kind)}</div>${media}${e.img ? `<p class="kind">OCR text of the highlighted lines:</p>` : ""}<blockquote>${esc(e.quote)}${e.next ? `<br>${esc(e.next)}` : ""}</blockquote>${check}</div>`;
 }
 
-function cellmapHTML(cell) {
+function cellmapHTML(cell, appraiser) {
   const row = +cell.slice(1);
   const rows = D.grid;
   const i = rows.findIndex((g) => g.row === row);
   const start = Math.min(Math.max(0, i - 1), rows.length - 3);
   const win = rows.slice(start, start + 3);
-  return `<div class="cellmap"><p class="cap">Written to Sales Comparison!${cell}</p><table>
+  return `<div class="cellmap"><p class="cap">${appraiser ? "Left empty for the appraiser" : "Written to"} Sales Comparison!${cell}</p><table>
     <thead><tr><th class="rn"></th><th>B</th><th>D, Comparable 1</th></tr></thead><tbody>${
     win.map((g) => `<tr><th class="rn">${g.row}</th><td class="b">${esc(g.label)}</td><td class="${g.kind === "fact" ? "fact" : g.kind === "appraiser" ? "appr" : ""}${g.row === row ? " hit" : ""}">${esc(g.value)}</td></tr>`).join("")
   }</tbody></table></div>`;
@@ -360,7 +360,7 @@ function show(kind, idx, btn) {
     const choices = f.choices ? `<div class="choices">${f.choices.map((c) => `<div><span class="sf">${c.sf.toLocaleString("en-US")} sq ft</span><span>${esc(c.basis)}</span></div>`).join("")}</div>` : "";
     p.innerHTML = `<p class="cap">${esc(f.label)}</p><h2>${esc(f.display.split("\n")[0])}${f.display.includes("\n") ? " and 1 more" : ""}</h2>
       <p class="rule">${f.appraiser ? "" : "Rule applied: "}${esc(f.rule[0].toUpperCase() + f.rule.slice(1))}.</p>${choices}
-      ${cellmapHTML(f.cell)}
+      ${cellmapHTML(f.cell, f.appraiser)}
       ${f.evidence.length ? [...f.evidence].sort((a, b) => rank(a) - rank(b)).map(evidenceHTML).join("") : `<div class="ev"><p class="check">Written by the entry rule, from no single document.</p></div>`}`;
   } else {
     const e = D.held[idx];

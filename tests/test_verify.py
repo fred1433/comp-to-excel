@@ -104,3 +104,38 @@ def test_a_county_field_only_holds_its_own_meaning(county):
     reg = Registry([county_layer(county)])
     owner = next(f for f in county["facts"] if f["meaning_code"] == "current_owner")
     assert check_fact(dict(owner, meaning_code="buyer"), reg)[0] == "rejected"
+
+
+def test_negation_just_before_a_cut_quote(cited_lines):
+    f = {"doc": "minutes", "meaning_code": "sale_condition", "meaning": "x",
+         "value": "contingencies, closing in 30 days or as soon as possible",
+         "span_ids": ["minutes:p3:l24"], "quote": "contingencies and closing in 30 days or as soon as possible"}
+    status, reason = check_fact(f, Registry(cited_lines))
+    assert status == "rejected" and "negation" in reason
+
+
+def test_negation_moved_away_from_its_word(cited_lines):
+    f = {"doc": "minutes", "meaning_code": "sale_condition", "meaning": "x",
+         "value": "no closing in 30 days, contingencies",
+         "span_ids": ["minutes:p3:l24"], "quote": "with no contingencies and closing in 30 days"}
+    assert check_fact(f, Registry(cited_lines))[0] == "rejected"
+
+
+def test_fragments_of_one_label_are_not_distinct_operands(county):
+    reg = Registry([county_layer(county)])
+    area = next(f for f in county["facts"] if f["meaning_code"] == "gross_building_area")
+    ops = [{"label": "floor 1", "value": 2674}, {"label": "loor 1", "value": 2674}, {"label": "oor 1", "value": 2674}]
+    assert check_fact(dict(area, value="8022", derived_from={"op": "sum", "operands": ops}), reg)[0] == "rejected"
+
+
+def test_one_county_floor_line_is_not_a_building_area(county):
+    reg = Registry([county_layer(county)])
+    area = next(f for f in county["facts"] if f["meaning_code"] == "gross_building_area")
+    part = {k: v for k, v in area.items() if k != "derived_from"}
+    assert check_fact(dict(part, value="1876"), reg)[0] == "rejected"
+
+
+def test_context_lists_each_line_once_in_reading_order(cited_lines):
+    ctx = Registry(cited_lines).context(["minutes:p3:l23", "minutes:p3:l24", "minutes:p3:l25", "minutes:p3:l26"])
+    assert ctx.count("19606 for $390,000.00") == 1 and ctx.count("Eggert made the motion") == 1
+    assert ctx.index("MOTION: To take") < ctx.index("19606 for $390,000.00") < ctx.index("Eggert made")

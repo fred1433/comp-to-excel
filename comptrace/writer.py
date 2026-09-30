@@ -83,8 +83,10 @@ def sheet_part(pkg: Path, sheet_name: str) -> str:
     with zipfile.ZipFile(pkg) as z:
         wbx = z.read("xl/workbook.xml").decode()
         rels = z.read("xl/_rels/workbook.xml.rels").decode()
-    rid = re.search(r'<sheet name="%s" sheetId="\d+"(?: state="\w+")? r:id="(rId\d+)"' % re.escape(escape(sheet_name)), wbx).group(1)
-    target = re.search(r'<Relationship Id="%s" Type="[^"]+" Target="([^"]+)"' % rid, rels).group(1)
+    sheet = next(t for t in re.findall(r"<sheet\b[^>]*>", wbx) if re.search(r'\bname="%s"' % re.escape(escape(sheet_name)), t))
+    rid = re.search(r'\br:id="([^"]+)"', sheet).group(1)
+    rel = next(t for t in re.findall(r"<Relationship\b[^>]*>", rels) if re.search(r'\bId="%s"' % re.escape(rid), t))
+    target = re.search(r'\bTarget="([^"]+)"', rel).group(1)
     return "xl/" + target.lstrip("/").removeprefix("xl/")
 
 

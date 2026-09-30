@@ -278,7 +278,7 @@ class Run:
                        "choices": [{"basis": "county assessor, floor lines 1 to 3", "sf": float(c_gba["value"]), "fact": c_gba["id"]},
                                    {"basis": "listing site", "sf": float(k_gba["value"]), "fact": k_gba["id"]}],
                        "rule": "sources disagree on the area, so the cell is left for the appraiser; no price per sq ft exists until then"},
-            "gba_reported": {"value": (f"County assessor: {float(c_gba['value']):,.0f} sq ft on floor lines 1 to 3, plus {c_sections['below']:,} on lower-level lines B1. "
+            "gba_reported": {"value": (f"County assessor: {float(c_gba['value']):,.0f} sq ft on floor lines 1 to 3, plus {c_sections['below']:,} on the lower level (county code B1). "
                                        f"Listing site: {float(k_gba['value']):,.0f} sq ft. MLS: {m_stories['value']} stories."),
                              "facts": ids(c_gba, k_gba, m_stories), "rule": "every reported area with its source and scope"},
             "land_acres": {"value": acres_total, "facts": ids(*c_acres, m_lot), "rule": "sum of the parcels on the recorded instrument",

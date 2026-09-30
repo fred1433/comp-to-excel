@@ -84,10 +84,10 @@ class Registry:
 
     def context(self, span_ids: list[str]) -> str:
         """Cited lines plus label neighbours: same visual row, or the line printed just under or just over a cited value."""
-        texts = []
+        picked: dict[str, dict] = {}
         for sid in span_ids:
             s, page = self.spans[sid], self.page_of[sid]
-            texts.append(s["text"])
+            picked[sid] = s
             if not s.get("bbox"):  # structured records have no page geometry
                 continue
             x0, y0, x1, y1 = s["bbox"]
@@ -101,8 +101,13 @@ class Registry:
                 label_below = 0 <= oy0 - y1 < 8 and overlap
                 label_above = 0 <= y0 - oy1 < 8 and overlap
                 if same_row or label_below or label_above:
-                    texts.append(o["text"])
-        return " ".join(texts)
+                    picked[o["id"]] = o
+        # each line once, in reading order (page, then top to bottom, then left to right)
+        def pos(sp):
+            page = int(sp["id"].split(":p")[1].split(":")[0]) if ":p" in sp["id"] else 0
+            b = sp.get("bbox") or [0, 0, 0, 0]
+            return (page, round(b[1]), b[0])
+        return " ".join(sp["text"] for sp in sorted(picked.values(), key=pos))
 
 
 PRICE_CODES = {"sold_price", "accepted_offer_price", "asking_price", "price_per_sf_reported"}
@@ -178,6 +183,8 @@ def check_fact(fact: dict, reg: Registry) -> tuple[str, str | None]:
         allowed = COUNTY_FIELDS.get(code)
         if allowed is None or not fields <= allowed:
             return "rejected", f"field {', '.join(sorted(fields))} does not hold {_article(what)} {what}"
+        if code == "gross_building_area" and not fact.get("derived_from"):
+            return "rejected", "one floor line of the county AREA field is not a building area; use a labelled sum"
 
     if code in NUMERIC:
         try:
@@ -192,9 +199,10 @@ def check_fact(fact: dict, reg: Registry) -> tuple[str, str | None]:
             labels = [o["label"] for o in ops]
             if len(set(labels)) != len(labels):
                 return "rejected", "an operand field is used more than once"
+            fields = {norm(x) for x in quote.split("=", 1)[-1].split(",")}
             for o in ops:
-                if f"{o['label']} {o['value']}" not in quote:
-                    return "rejected", f"the quote does not give {o['label']} as {o['value']}"
+                if f"{o['label']} {o['value']}" not in fields:
+                    return "rejected", f"the quote has no field reading exactly \"{o['label']} {o['value']}\""
             if abs(sum(o["value"] for o in ops) - v) > 1e-9:
                 return "rejected", f"the operands do not add up to {value}"
         else:
@@ -233,10 +241,16 @@ def check_fact(fact: dict, reg: Registry) -> tuple[str, str | None]:
         missing = [w for w in vwords if (len(w) > 2 or w in NEGATIONS) and not present(w.strip("."))]
         if missing:
             return "rejected", "the value adds words the quote does not contain: " + ", ".join(missing[:4])
-        # a negation in the quote must survive in the value when the word it negates does
-        for i, w in enumerate(qwords[:-1]):
-            if w in NEGATIONS and qwords[i + 1].strip(".,;") in vwords and w not in vwords:
-                return "rejected", f"the value drops the negation in \"{w} {qwords[i + 1]}\""
+        # a negation must survive: read it in the cited text, including the words just before the quote starts,
+        # and require the value to keep the same pair ("no contingencies"), not the two words apart
+        start = cited.lower().find(q)
+        before = re.findall(r"[a-z0-9][a-z0-9\-\+/\.]*", cited.lower()[:start])[-2:] if start > 0 else []
+        window = before + qwords
+        vtext = " ".join(w.strip(".,;") for w in vwords)
+        for i, w in enumerate(window[:-1]):
+            nxt = window[i + 1].strip(".,;")
+            if w in NEGATIONS and nxt in [x.strip(".,;") for x in vwords] and f"{w} {nxt}" not in vtext:
+                return "rejected", f"the value drops the negation in \"{w} {nxt}\""
     return "verified", None
 
 

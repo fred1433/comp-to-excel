@@ -1,5 +1,5 @@
 {
- "started_at": "2026-09-30T17:36:58+00:00",
+ "started_at": "2026-09-30T17:47:56+00:00",
  "files": {
   "template": {
    "path": "workbooks/template.xlsx",
@@ -7,11 +7,11 @@
   },
   "delivered": {
    "path": "workbooks/comparable-1-entered.xlsx",
-   "sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed"
+   "sha256": "d727f4be069ca807efbdeda9fd9b10a4fe3300d41f4acb350601013ec192d2a7"
   },
   "test_copy": {
    "path": "workbooks/formula-check-test-inputs.xlsx",
-   "sha256": "61c65613bfbe2f3de2085a7f1144f53c0ab3856f4674c1cad27701d3cc3343d8",
+   "sha256": "30896a531287ed2bcc777a93859a3da07afa686354dfa8d31042eeca0e513398",
    "note": "test inputs typed by us to exercise the formulas; not an appraisal, not delivered"
   }
  },
@@ -267,7 +267,7 @@
      "rule": "sources disagree on the area, so the cell is left for the appraiser; no price per sq ft exists until then"
     },
     "gba_reported": {
-     "value": "County assessor: 7,354 sq ft on floor lines 1 to 3, plus 2,644 on lower-level lines B1. Listing site: 6,000 sq ft. MLS: 2 stories.",
+     "value": "County assessor: 7,354 sq ft on floor lines 1 to 3, plus 2,644 on the lower level (county code B1). Listing site: 6,000 sq ft. MLS: 2 stories.",
      "facts": [
       12,
       41,
@@ -388,7 +388,7 @@
    "step": "approve",
    "outcome": "approved_for_demo_entry",
    "approved_by": "demo operator (Frederic de Lavenne de Choulot), not an appraiser",
-   "version_sha256": "4f46efee15cde41f579a130a11e908beac1306679ef4eaeaa66b9d5bbed23477",
+   "version_sha256": "7776748302075a335ef8b428e47199e08e343fbc9d936ce831b139c61aa32978",
    "template_sha256": "af8caaac9117b099b893c9be2656f2195b5cb9803a02d6ec2c20a22c5966fc98",
    "destination": "Sales Comparison!D5:D9, D11:D22 (Comparable 1)",
    "appraiser_verification": "pending"
@@ -407,15 +407,15 @@
    "outcome": "worker_stopped_after_save",
    "note": "simulated: the workbook was saved, the completion was never recorded",
    "file_exists": true,
-   "file_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed"
+   "file_sha256": "d727f4be069ca807efbdeda9fd9b10a4fe3300d41f4acb350601013ec192d2a7"
   },
   {
    "n": 21,
    "step": "write",
    "outcome": "conflict_not_overwritten",
    "what": "output file changed since the save (6,000 typed into D10), worker resumes",
-   "found_sha256": "0f35d1b5b53fc0d925a2733c6d587b683de7428f94653817858f9d9b04aa3d66",
-   "expected_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed",
+   "found_sha256": "b36c9b094d5dcfb12b2591a743d7f21b0480862968d23b7bec95aa894d5fecd2",
+   "expected_sha256": "d727f4be069ca807efbdeda9fd9b10a4fe3300d41f4acb350601013ec192d2a7",
    "d10_after": 6000.0
   },
   {
@@ -423,15 +423,15 @@
    "step": "write",
    "outcome": "resumed_regenerated",
    "what": "operator set the changed file aside; worker resumes with no file",
-   "op_id": "72d10ae8-ba1c-461a-bb78-14990868f6c0",
-   "output_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed"
+   "op_id": "1e99500f-7e14-474e-8666-68a99e1ca7c0",
+   "output_sha256": "d727f4be069ca807efbdeda9fd9b10a4fe3300d41f4acb350601013ec192d2a7"
   },
   {
    "n": 23,
    "step": "write",
    "outcome": "already_written_file_verified",
    "what": "the same approval run again: the receipt is checked against the file",
-   "output_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed"
+   "output_sha256": "d727f4be069ca807efbdeda9fd9b10a4fe3300d41f4acb350601013ec192d2a7"
   },
   {
    "n": 24,
@@ -1356,7 +1356,7 @@
     {
      "part": "xl/worksheets/sheet1.xml",
      "before": "2654d8c185f0871e3ae9238e0eb53d73e71648188e373f1861406ea7b2d4500f",
-     "after": "41ec1416523d283ee3bcccd874d53296df7dcb00a5d27a20fda314cf6e309b9b",
+     "after": "1ca77d552045a8c054bcc6542a30576c34c7b035932208576eeeccbadf986527",
      "identical": false
     },
     {
@@ -1525,7 +1525,7 @@
   "delivered": {
    "application": "Microsoft Excel for Mac",
    "version": "16.113.3",
-   "workbook_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed",
+   "workbook_sha256": "d727f4be069ca807efbdeda9fd9b10a4fe3300d41f4acb350601013ec192d2a7",
    "recalculation": "calculate full",
    "saved": false,
    "cells": {
@@ -1579,7 +1579,7 @@
   "test_copy": {
    "application": "Microsoft Excel for Mac",
    "version": "16.113.3",
-   "workbook_sha256": "61c65613bfbe2f3de2085a7f1144f53c0ab3856f4674c1cad27701d3cc3343d8",
+   "workbook_sha256": "30896a531287ed2bcc777a93859a3da07afa686354dfa8d31042eeca0e513398",
    "recalculation": "calculate full",
    "saved": false,
    "cells": {

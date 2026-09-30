@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>One Pennsylvania sale, traced</title>
+<meta name="description" content="A public-data demonstration of controlled sale entry: one recorded Pennsylvania sale, every figure checked against its source line, approved, and written into an Excel comparison grid whose formulas did not change.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --ink: #16243a;
+  --muted: #5b6778;
+  --faint: #8993a1;
+  --line: #d9dfe7;
+  --paper: #ffffff;
+  --sheet: #f6f8fb;
+  --fact: #e9f0f7;
+  --appr: #fff3c4;
+  --stamp: #5a3e8e;
+  --stamp-tint: #f2edf9;
+  --refuse: #a5281c;
+  --refuse-tint: #fbeeec;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: "Public Sans", system-ui, sans-serif; font-size: 16px; line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+a { color: var(--stamp); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--stamp); outline-offset: 2px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+/* header */
+header.doc { padding: 52px 0 8px; }
+h1 { font-size: clamp(34px, 4.4vw, 48px); line-height: 1.08; letter-spacing: -0.015em; font-weight: 700; margin: 0; }
+.lead { max-width: 70ch; margin: 14px 0 0; font-size: 17px; color: #28364c; }
+.doctype { color: var(--muted); font-size: 14px; margin: 0 0 4px; }
+.sheethead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: start; padding: 22px 22px 18px; border-bottom: 2px solid var(--ink); }
+.addr { font-size: 23px; font-weight: 700; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+.sub { margin: 4px 0 0; color: var(--muted); font-size: 14.5px; }
+.stamp {
+  border: 2px solid var(--stamp); outline: 1px solid var(--stamp); outline-offset: 2px; color: var(--stamp); border-radius: 2px;
+  padding: 8px 12px; font-size: 12.5px; line-height: 1.35; background: var(--paper); margin: 4px 4px 0 0;
+}
+.stamp strong { display: block; font-size: 14px; white-space: nowrap; }
+.keys { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.12fr); border-bottom: 1px solid var(--line); }
+.key { text-align: left; background: none; border: 0; border-top: 3px solid transparent; padding: 15px 18px 13px; cursor: pointer; min-width: 0; }
+.key + .key { border-left: 1px solid var(--line); }
+.key:hover { background: #eef2f7; }
+.key[aria-pressed="true"] { background: var(--stamp-tint); border-top-color: var(--stamp); }
+.key .lab { display: block; color: var(--muted); font-size: 13.5px; }
+.key .big { display: block; font-size: clamp(19px, 1.65vw, 23px); white-space: nowrap; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; margin: 2px 0; }
+.key .src { font-size: 12.5px; color: var(--faint); }
+.key .src b { color: var(--stamp); font-weight: 600; }
+/* sheet + evidence */
+.desk { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 40px; padding-top: 30px; padding-bottom: 64px; align-items: start; }
+.sheet { background: var(--sheet); border: 1px solid #c8d0db; border-radius: 3px; }
+#sheet { padding: 4px 0 8px; }
+.row {
+  display: grid; grid-template-columns: 170px minmax(0, 1fr) auto; gap: 16px; align-items: baseline; width: 100%;
+  text-align: left; background: none; border: 0; border-left: 3px solid transparent; padding: 11px 20px 11px 17px; cursor: pointer;
+}
+.row + .row { border-top: 1px solid #e6eaf0; }
+.row:hover { background: #eef2f7; }
+.row[aria-pressed="true"] { background: var(--stamp-tint); border-left-color: var(--stamp); }
+.row .lab { color: var(--muted); font-size: 14px; }
+.row .val { font-size: 17px; white-space: pre-line; }
+.row.long .val { font-size: 15px; line-height: 1.5; }
+.row .src { font-size: 12.5px; color: var(--faint); white-space: nowrap; }
+.row .src b { color: var(--stamp); font-weight: 600; }
+.row .flag { display: block; font-size: 13px; color: #7a5a00; margin-top: 3px; }
+.calc { margin: 18px 0 0; padding: 14px 20px; border: 1px dashed var(--line); border-radius: 4px; font-size: 15px; color: #28364c; }
+.calc b { font-weight: 600; }
+.held { margin-top: 28px; }
+.held h3, .panel h3 { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
+.held ul { list-style: none; margin: 0; padding: 0; }
+.held li button {
+  width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); padding: 10px 0; cursor: pointer;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px;
+}
+.held li button[aria-pressed="true"] .q { color: var(--refuse); }
+.held .q { font-size: 15px; }
+.held .why { font-size: 13.5px; color: var(--muted); }
+
+.panel { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; padding-right: 6px; }
+.panel .cap { font-size: 14px; color: var(--muted); margin: 0; }
+.panel h2 { font-size: 26px; line-height: 1.2; margin: 2px 0 6px; font-weight: 700; letter-spacing: -0.01em; }
+.panel .rule { font-size: 14.5px; color: #28364c; margin: 0 0 18px; }
+.ev { border-top: 1px solid var(--line); padding: 16px 0; }
+.ev .who { font-weight: 600; font-size: 15px; }
+.ev .kind { font-size: 13px; color: var(--muted); }
+.ev img { display: block; width: 100%; height: auto; border: 1px solid var(--line); margin: 10px 0 6px; background: #fff; }
+.ev blockquote { margin: 10px 0 6px; padding: 10px 14px; background: var(--fact); border-radius: 3px; font-size: 15px; }
+.ev.conflict blockquote { background: var(--appr); }
+.ev.rejected blockquote { background: var(--refuse-tint); }
+.ev .check { font-size: 13.5px; color: var(--muted); }
+.ev .check.ok::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3d7a4f; margin-right: 7px; vertical-align: 1px; }
+.ev .check.no { color: var(--refuse); }
+.cellmap { margin: 0 0 8px; }
+.cellmap .cap { margin-bottom: 4px; }
+.cellmap table { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
+.cellmap th, .cellmap td { border: 1px solid #cfd6df; padding: 4px 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cellmap th { background: #eef1f5; color: var(--muted); font-weight: 500; text-align: center; }
+.cellmap th.rn { width: 34px; }
+.cellmap td.b { width: 52%; color: var(--muted); }
+.cellmap td.fact { background: var(--fact); }
+.cellmap td.appr { background: var(--appr); }
+.cellmap td.hit { outline: 2px solid var(--stamp); outline-offset: -2px; font-weight: 600; }
+
+/* run */
+section.run { border-top: 1px solid var(--line); padding: 56px 0; }
+section.run h2, section.notes h2 { font-size: 28px; letter-spacing: -0.01em; margin: 0 0 8px; }
+.intro { color: #28364c; max-width: 66ch; margin: 0 0 28px; }
+ol.seq { list-style: none; counter-reset: s; margin: 0; padding: 0; max-width: 900px; }
+ol.seq li { counter-increment: s; display: grid; grid-template-columns: 34px 112px minmax(0, 1fr); gap: 14px; padding: 13px 0; border-top: 1px solid var(--line); }
+ol.seq li::before { content: counter(s); color: var(--faint); font-size: 14px; padding-top: 2px; }
+.out { font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 3px; height: fit-content; text-align: center; border: 1px solid var(--line); color: var(--ink); }
+.out.refused, .out.detected { color: var(--refuse); border-color: #e7b9b3; background: var(--refuse-tint); }
+.out.approved { color: var(--stamp); border-color: #cdbfe3; background: var(--stamp-tint); }
+.seq .what { font-size: 15.5px; }
+.seq .det { display: block; font-size: 13.5px; color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
+.proof { margin-top: 40px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; max-width: 1000px; }
+.proof h3 { font-size: 17px; margin: 0 0 8px; }
+.proof p { margin: 0 0 10px; font-size: 15px; color: #28364c; }
+.hash { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 4px 12px; font-size: 13.5px; margin: 10px 0; }
+.hash span { color: var(--muted); }
+.hash code { font-family: inherit; overflow-wrap: anywhere; }
+.files { list-style: none; padding: 0; margin: 0; font-size: 14.5px; }
+.files li { padding: 8px 0; border-top: 1px solid var(--line); }
+.files small { display: block; color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+
+section.notes { border-top: 1px solid var(--line); padding: 56px 0 64px; }
+.notes ul { max-width: 70ch; padding-left: 20px; margin: 12px 0 24px; color: #28364c; }
+.notes li { margin: 6px 0; }
+.next { font-size: 18px; max-width: 60ch; margin: 0; }
+footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--muted); font-size: 13.5px; }
+footer p { margin: 4px 0; }
+
+@media (max-width: 900px) {
+  .wrap { padding: 0 16px; }
+  header.doc { padding-top: 32px; }
+  .sheethead { grid-template-columns: 1fr; padding: 16px 14px; }
+  .stamp { justify-self: start; }
+  .key { padding: 11px 10px 10px; }
+  .key .lab { font-size: 12px; }
+  .key .big { font-size: 15.5px; }
+  .key .src { font-size: 11.5px; }
+  .desk { grid-template-columns: 1fr; gap: 0; padding-top: 20px; }
+  .panel { max-height: none; overflow: visible; }
+  .panel > .cap:first-child, .panel > h2 { display: none; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 12px 14px 12px 13px; }
+  .row .lab { grid-column: 1 / -1; }
+  .panel { position: static; background: var(--paper); border: 1px solid #cdbfe3; border-top: 0; padding: 14px 14px 4px; }
+  .panel h2 { font-size: 22px; }
+  .proof { grid-template-columns: 1fr; }
+  ol.seq li { grid-template-columns: 26px minmax(0, 1fr); }
+  ol.seq li .out { grid-column: 2; justify-self: start; }
+  ol.seq li .what { grid-column: 2; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .panel.swap { animation: settle .28s ease-out; }
+  @keyframes settle { from { opacity: .35; } to { opacity: 1; } }
+}
+</style>
+</head>
+<body>
+<header class="doc">
+  <div class="wrap">
+    <h1>One Pennsylvania sale, traced</h1>
+    <p class="lead">A public-data demonstration of controlled sale entry. Each figure was read from public documents, checked by code against the line it came from, approved, and written into an Excel comparison grid without touching a formula. Select a figure to see where it came from.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap desk">
+    <div>
+      <div class="sheet">
+        <div class="sheethead">
+          <div>
+            <p class="doctype">Comparable sale 1, data sheet</p>
+            <p class="addr">3540 St. Lawrence Ave, Reading, PA 19606</p>
+            <p class="sub">St. Lawrence Borough, Berks County</p>
+          </div>
+          <div class="stamp"><strong>Approved for demo entry</strong>Appraiser verification pending</div>
+        </div>
+        <div class="keys" id="keys"></div>
+        <div id="sheet" role="group" aria-label="Sale facts"></div>
+      </div>
+      <p class="calc" id="calc"></p>
+      <div class="held">
+        <h3>Held back by the checks</h3>
+        <ul id="held"></ul>
+      </div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <section class="run">
+    <div class="wrap">
+      <h2>What ran, in order</h2>
+      <p class="intro">One recorded run against a real PostgreSQL database, with an application role for each job: reading, reviewing, writing. The model was called once; the run replays its recorded answer.</p>
+      <ol class="seq" id="seq"></ol>
+      <div class="proof">
+        <div>
+          <h3>The workbook, before and after</h3>
+          <p id="parts"></p>
+          <p>Fingerprint of every formula, defined name, conditional format, validation rule, calculation setting, style and constant outside the input cells:</p>
+          <div class="hash" id="hash"></div>
+          <p id="excel"></p>
+        </div>
+        <div>
+          <h3>Files</h3>
+          <ul class="files" id="files"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="wrap">
+      <h2>Not shown here</h2>
+      <ul>
+        <li>Local-source demonstration; Microsoft tenant integration not demonstrated. The documents were read from a local folder.</li>
+        <li>Excel for Mac, not desktop Excel on a Windows 365 runner. The copy on this machine is not activated, so it recalculated the file and could not save it; the delivered file is the written file, with the same hash as the one Excel recalculated.</li>
+        <li>No party to the sale was contacted. The deed image was not retrieved; the instrument number comes from the county assessment record.</li>
+        <li>The grid is ours, built to stand in for a firm's model. Its adjustment convention is one of several in use.</li>
+        <li>Word reports, a review queue and multi-agent quality control are left out.</li>
+      </ul>
+      <p class="next">Next step: establish whether this controlled entry pattern fits your workbook, and define the template-mapping and acceptance work for discovery.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Built by Frederic de Lavenne de Choulot, The AI Pipe. Code and recorded run: <a href="https://github.com/fred1433/comp-to-excel">github.com/fred1433/comp-to-excel</a></p>
+    <p id="attr"></p>
+  </div>
+</footer>
+
+<script>
+const D = {"sheet":[{"key":"sale_price","label":"Sale price","cell":"D9","display":"$390,000","rule":"county sale price; MLS sold price and the council's accepted offer agree","evidence":[{"id":1,"doc":"county","meaning":"sale price on the assessment record","value":"390000","quote":"PRICE (Sale Price) = 390000","page":null,"spans":["county:81532611565915:PRICE"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":18,"doc":"mls-cb","meaning":"Final sold price of the property per MLS listing summary","value":"390000","quote":"Sold For: $390,000","page":1,"spans":["mls-cb:p1:l13"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":13,"doc":"minutes","meaning":"Council motion accepting an offer on the old Borough Hall property, no contingencies, closing in 30 days or ASAP","value":"390000","quote":"To take the offer that was presented on the sale of 3540 St. Lawrence Ave. Reading, PA 19606 for $390,000.00 with no contingencies and closing in 30 days or as soon as possible.","page":3,"spans":["minutes:p3:l23","minutes:p3:l24","minutes:p3:l25","minutes:p3:l26"],"status":"verified","reason":null,"role":"source","img":"img/minutes-p3-motion.png","derived":null}],"conflict":null,"raw":390000.0},{"key":"sale_date","label":"Sale date","cell":"D8","display":"10/10/2025","rule":"county sale date; MLS agrees","evidence":[{"id":2,"doc":"county","meaning":"sale date on the assessment record","value":"2025-10-10","quote":"SALEDT (Sale Date) = 2025-10-10","page":null,"spans":["county:81532611565915:SALEDT"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":19,"doc":"mls-cb","meaning":"Date the sale closed per MLS price/sales history table","value":"2025-10-10","quote":"10/10/2025","page":3,"spans":["mls-cb:p3:l21"],"status":"verified","reason":null,"role":"source","img":null,"derived":null}],"conflict":null,"raw":"2025-10-10"},{"key":"instrument","label":"Recorded instrument","cell":"D7","display":"2025031513","rule":"county instrument number","evidence":[{"id":3,"doc":"county","meaning":"recorded instrument number","value":"2025031513","quote":"INSTRUNO (Instrument Number) = 2025031513","page":null,"spans":["county:81532611565915:INSTRUNO"],"status":"verified","reason":null,"role":"source","img":null,"derived":null}],"conflict":null,"raw":"2025031513"},{"key":"parcels","label":"Parcels conveyed","cell":"D6","display":"81532611565915\n81532611564864","rule":"parcels on the recorded instrument","evidence":[{"id":6,"doc":"county","meaning":"parcel conveyed by this instrument","value":"81532611565915","quote":"PARID 81532611565915: INSTRUNO = 2025031513, ACRES = 0.31, DESC1 = COMMERCIAL BUILDING","page":null,"spans":["county:81532611565915:PARID"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":8,"doc":"county","meaning":"parcel conveyed by this instrument","value":"81532611564864","quote":"PARID 81532611564864: INSTRUNO = 2025031513, ACRES = 0.26, DESC1 = None","page":null,"spans":["county:81532611564864:PARID"],"status":"verified","reason":null,"role":"source","img":null,"derived":null}],"conflict":null,"raw":"81532611565915; 81532611564864"},{"key":"address","label":"Address","cell":"D5","display":"3540 St. Lawrence Ave, Reading, PA 19606 (with rear parcel)","rule":"county site address; the recorded instrument conveys two parcels","evidence":[{"id":4,"doc":"county","meaning":"site address on the assessment record","value":"3540 ST LAWRENCE AV","quote":"ADRNO/ADRSTR/ADRSUF (site address) = 3540 ST LAWRENCE AV","page":null,"spans":["county:81532611565915:ADDRESS"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":6,"doc":"county","meaning":"parcel conveyed by this instrument","value":"81532611565915","quote":"PARID 81532611565915: INSTRUNO = 2025031513, ACRES = 0.31, DESC1 = COMMERCIAL BUILDING","page":null,"spans":["county:81532611565915:PARID"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":8,"doc":"county","meaning":"parcel conveyed by this instrument","value":"81532611564864","quote":"PARID 81532611564864: INSTRUNO = 2025031513, ACRES = 0.26, DESC1 = None","page":null,"spans":["county:81532611564864:PARID"],"status":"verified","reason":null,"role":"source","img":null,"derived":null}],"conflict":null,"raw":"3540 St. Lawrence Ave, Reading, PA 19606 (with rear parcel)"},{"key":"gba_sf","label":"Gross building area","cell":"D10","display":"7,354 sq ft above grade","rule":"county assessor above-grade area preferred over listing figures","evidence":[{"id":12,"doc":"county","meaning":"above-grade area, sum of assessor floor lines 1 to 3","value":"7354","quote":"AREA by floor (sq ft) = lower level 1876, lower level 768, floor 1 2674, floor 2 2674, floor 3 2006","page":null,"spans":["county:81532611565915:AREA"],"status":"verified","reason":null,"role":"source","img":null,"derived":{"op":"sum","operands":[2674,2674,2006]}},{"id":41,"doc":"mls-coalition","meaning":"Building square footage reported alongside acreage on listing summary","value":"6000","quote":"6,000","page":1,"spans":["mls-coalition:p1:l8"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":41,"doc":"mls-coalition","meaning":"Building square footage reported alongside acreage on listing summary","value":"6000","quote":"6,000","page":1,"spans":["mls-coalition:p1:l8"],"status":"verified","reason":null,"role":"conflict","img":null,"derived":null}],"conflict":"a listing site shows 6,000 sq ft","raw":7354.0},{"key":"land_acres","label":"Land area","cell":"D11","display":"0.57 acres, two parcels","rule":"sum of the parcels on the recorded instrument","evidence":[{"id":7,"doc":"county","meaning":"acreage of parcel 81532611565915","value":"0.31","quote":"PARID 81532611565915: ACRES = 0.31","page":null,"spans":["county:81532611565915:ACRES"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":9,"doc":"county","meaning":"acreage of parcel 81532611564864","value":"0.26","quote":"PARID 81532611564864: ACRES = 0.26","page":null,"spans":["county:81532611564864:ACRES"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":26,"doc":"mls-cb","meaning":"Lot size in acres per assessor source","value":"0.31","quote":"Lot Size (Acres): 0.31","page":1,"spans":["mls-cb:p1:l27"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":26,"doc":"mls-cb","meaning":"Lot size in acres per assessor source","value":"0.31","quote":"Lot Size (Acres): 0.31","page":1,"spans":["mls-cb:p1:l27"],"status":"verified","reason":null,"role":"conflict","img":null,"derived":null}],"conflict":"the MLS lot size covers the front parcel only","raw":0.57},{"key":"year_built","label":"Year built","cell":"D12","display":"1890","rule":"county record preferred over an MLS estimate","evidence":[{"id":10,"doc":"county","meaning":"year built on the commercial record","value":"1890","quote":"YRBLT (Year Built) = 1890","page":null,"spans":["county:81532611565915:YRBLT"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":28,"doc":"mls-cb","meaning":"Estimated year the building was constructed","value":"1900","quote":"Year Built: 1900","page":2,"spans":["mls-cb:p2:l39"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":28,"doc":"mls-cb","meaning":"Estimated year the building was constructed","value":"1900","quote":"Year Built: 1900","page":2,"spans":["mls-cb:p2:l39"],"status":"verified","reason":null,"role":"conflict","img":null,"derived":null}],"conflict":"MLS year built is marked estimated","raw":1890.0},{"key":"zoning","label":"Zoning","cell":"D13","display":"BC and R-6","rule":"MLS, only source","evidence":[{"id":30,"doc":"mls-cb","meaning":"Zoning designation reported for the property","value":"BC AND R-6","quote":"Zoning: BC AND R-6","page":1,"spans":["mls-cb:p1:l41"],"status":"verified","reason":null,"role":"source","img":null,"derived":null}],"conflict":null,"raw":"BC and R-6"},{"key":"property_rights","label":"Property rights","cell":"D14","display":"Fee Simple (reported by MLS)","rule":"reported, not verified","evidence":[{"id":32,"doc":"mls-cb","meaning":"Type of ownership interest conveyed","value":"Fee Simple","quote":"Ownership: Fee Simple","page":2,"spans":["mls-cb:p2:l16"],"status":"verified","reason":null,"role":"source","img":null,"derived":null}],"conflict":null,"raw":"Fee Simple (reported by MLS)"},{"key":"sale_conditions","label":"Conditions of sale","cell":"D15","display":"Offer accepted by the borough council with no contingencies and closing in 30 days or as soon as possible (minutes of 9/11/2025). Listed at $575,000 on 1/10/2025, reduced to $499,000 on 7/15/2025. Excluded: furniture, fixtures, equipment and inventory of seller.","rule":"reported facts, no verdict on arm's length","evidence":[{"id":16,"doc":"minutes","meaning":"Terms attached to the accepted offer: no contingencies, quick close","value":"no contingencies, closing in 30 days or as soon as possible","quote":"for $390,000.00 with no contingencies and closing in 30 days or as soon as possible","page":3,"spans":["minutes:p3:l23","minutes:p3:l24"],"status":"verified","reason":null,"role":"source","img":"img/minutes-p3-motion.png","derived":null},{"id":22,"doc":"mls-cb","meaning":"Original list (asking) price per MLS history table","value":"575000","quote":"$575,000","page":3,"spans":["mls-cb:p3:l33"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":21,"doc":"mls-cb","meaning":"Original listing date per MLS price/sales history table","value":"2025-01-10","quote":"1/10/2025","page":3,"spans":["mls-cb:p3:l23"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":24,"doc":"mls-cb","meaning":"Reduced asking price prior to sale per MLS history table","value":"499000","quote":"$499,000","page":3,"spans":["mls-cb:p3:l32"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":23,"doc":"mls-cb","meaning":"Date the asking price was reduced per MLS history table","value":"2025-07-15","quote":"7/15/2025","page":3,"spans":["mls-cb:p3:l22"],"status":"verified","reason":null,"role":"source","img":null,"derived":null},{"id":33,"doc":"mls-cb","meaning":"Items excluded from the sale of the property","value":"Furniture, Fixtures, Equipment and Inventory of Seller","quote":"Exclusions: Furniture, Fixtures, Equipment and Inventory of Seller","page":2,"spans":["mls-cb:p2:l18"],"status":"verified","reason":null,"role":"source","img":null,"derived":null}],"conflict":null,"raw":"Offer accepted by the borough council with no contingencies and closing in 30 days or as soon as possible (minutes of 9/11/2025). Listed at $575,000 on 1/10/2025, reduced to $499,000 on 7/15/2025. Excluded: furniture, fixtures, equipment and inventory of seller."},{"key":"verification","label":"Verification","cell":"D17","display":"Public records reviewed; no transaction-party verification performed","rule":"state of verification","evidence":[],"conflict":null,"raw":"Public records reviewed; no transaction-party verification performed"}],"held":[{"id":15,"doc":"minutes","meaning":"Date of the Council meeting at which the offer-acceptance motion was made","value":"2025-09-11","quote":"Thursday, September 11, 2025","page":1,"spans":["minutes:p1:l3"],"status":"rejected","reason":"nothing on or beside the cited line says this is an offer acceptance date","role":"source","img":"img/minutes-p1-date.png","derived":null},{"id":38,"doc":"mls-cb","meaning":"Description noting sale includes an additional rear land parcel providing parking","value":"sale includes additional land parcel in rear providing paved parking, total 21 spaces","quote":"The sale includes the additional land parcel in the rear that\nprovides additional paved parking, bringing the off-street parking to a total of 21 spaces.","page":1,"spans":["mls-cb:p1:l9","mls-cb:p1:l10"],"status":"rejected","reason":"the value adds words the quote does not contain: providing","role":"source","img":null,"derived":null},{"id":40,"doc":"mls-coalition","meaning":"Sold price shown on real estate portal listing","value":"390000","quote":"$390,000","page":1,"spans":["mls-coalition:p1:l6"],"status":"rejected","reason":"nothing on or beside the cited line says this is a sold price","role":"source","img":null,"derived":null},{"id":50,"doc":"mls-coalition","meaning":"Parking features/types available at the property","value":"Lighted Parking, Paved Parking, Parking Lot, 4+ Spaces, 3+ Spaces, 2+ Spaces, 1+ Spaces","quote":"Parking Features: Lighted Parking,Paved Parking,Parking Lot,4+ Spaces,3+ Spaces,2+\nSpaces,1+ Spaces","page":4,"spans":["mls-coalition:p4:l1","mls-coalition:p4:l2"],"status":"rejected","reason":"value 'Lighted Parking, Paved Parking, Parking Lot, 4+ Spaces, 3+ Spaces, 2+ Spaces, 1+ Spaces' is not a number","role":"source","img":null,"derived":null}],"grid":[{"row":5,"label":"Address","value":"3540 St. Lawrence Ave, Reading, PA 19606 (with rear parcel)","kind":"fact"},{"row":6,"label":"Parcel(s)","value":"81532611565915; 81532611564864","kind":"fact"},{"row":7,"label":"Recorded instrument","value":"2025031513","kind":"fact"},{"row":8,"label":"Sale date","value":"10/10/2025","kind":"fact"},{"row":9,"label":"Sale price ($)","value":"390,000","kind":"fact"},{"row":10,"label":"Gross building area (sq ft, above grade)","value":"7,354","kind":"fact"},{"row":11,"label":"Land area (acres)","value":"0.57","kind":"fact"},{"row":12,"label":"Year built","value":"1890","kind":"fact"},{"row":13,"label":"Zoning","value":"BC and R-6","kind":"fact"},{"row":14,"label":"Property rights conveyed (reported)","value":"Fee Simple (reported by MLS)","kind":"fact"},{"row":15,"label":"Conditions of sale (reported facts)","value":"Offer accepted by the borough council with no contingencies and closing in 30 days or as soon as possible (minutes of 9/11/2025). Listed at $575,000 on 1/10/2025, reduced to $499,000 on 7/15/2025. Excluded: furniture, fixtures, equipment and inventory of seller.","kind":"fact"},{"row":16,"label":"Sources","value":"Berks County assessment record (open data, retrieved 9/30/2026); St. Lawrence Borough Council minutes, 9/11/2025; MLS PABK2052516 on two listing sites","kind":"fact"},{"row":17,"label":"Verification","value":"Public records reviewed; no transaction-party verification performed","kind":"fact"},{"row":20,"label":"Sale price per sq ft of gross building area","value":"$53.03","kind":"formula"},{"row":21,"label":"Land-to-building ratio","value":"3.38","kind":"formula"},{"row":23,"label":"Property rights conveyed (%)","value":"","kind":"appraiser"},{"row":24,"label":"Adjusted price per sq ft","value":"","kind":"formula"},{"row":43,"label":"Adjusted price per sq ft, after all adjustments","value":"","kind":"formula"},{"row":49,"label":"Indicated value, rounded","value":"","kind":"formula"}],"notes":{"mls_price_per_sf":{"fact":25,"value":83.17,"reading":"499,000 / 6,000 sq ft = 83.17: the listing's price per sq ft uses the reduced asking price, so it is not a sale unit price"}},"docs":{"county":{"name":"Berks County assessment record","kind":"County open-data record, retrieved 9/30/2026","url":"https://services3.arcgis.com/dGYe1jDYrTw1wwpc/arcgis/rest/services/Berks_Assessment_CAMA_Master_File/FeatureServer/14","sha256":null},"minutes":{"name":"St. Lawrence Borough Council minutes, 9/11/2025","kind":"Scanned PDF, read by OCR","url":"https://stlawboro.us/meeting-minutes","sha256":"57a896a45d1b7c6c9a8edf208668337da84e720ca72d1e0a44026fdcecc2897b"},"mls-cb":{"name":"MLS PABK2052516, coldwellbankerhomes.com","kind":"Listing page saved as PDF on 9/30/2026","url":"https://www.coldwellbankerhomes.com/pa/reading-berks-county/3540-saint-lawrence-ave/pid_63121617/","sha256":"575730eaf076880006f86e579cb59853a405c3367587277121ac9958490ceed7"},"mls-coalition":{"name":"MLS PABK2052516, coalitionpg.com","kind":"Listing page saved as PDF on 9/30/2026","url":"https://www.coalitionpg.com/search/pennsylvania/reading/misc/3540-saint-lawrence-ave-bid-262-PABK2052516","sha256":"cabb482c52157caf498100c68f336d13751143234a5e493483a278ce428850f4"}},"price_per_sf":{"value":53.032363339679,"formula":"=IF(OR(D9=\"\",D10=\"\"),\"\",D9/D10)","price":390000.0,"gba":7354.0},"files":{"template":{"path":"workbooks/template.xlsx","sha256":"fcc3a2607d15be5c39ac14f9bfc098fc3bd2ea93d33c1c36b362c8a9257a390b"},"delivered":{"path":"workbooks/comparable-1-entered.xlsx","sha256":"51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd"},"test_copy":{"path":"workbooks/formula-check-test-inputs.xlsx","sha256":"f9eb66874ea4589c6721dd711b0072d909b2c3610dcae4c5abf2586e1fa7328e","note":"test inputs typed by us to exercise the formulas; not an appraisal, not delivered"}},"hashes":{"before":"bec2b6f5c51152bbd24edced4f3ae8c76ba1ce0760ff3f26e0ce6bd65b37c5a3","after":"bec2b6f5c51152bbd24edced4f3ae8c76ba1ce0760ff3f26e0ce6bd65b37c5a3","counts":{"formulas":36,"defined_names":3,"conditional_formats":1,"data_validations":18,"constants":58,"hidden_sheets":1},"parts":11,"parts_changed":["xl/worksheets/sheet1.xml"],"cells_changed":["D5","D6","D7","D8","D9","D10","D11","D12","D13","D14","D15","D16","D17"]},"excel":{"version":"16.113.3","sha":"51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd","same_file":true,"comparison":[{"cell":"D20","what":"price per sq ft","excel":53.032363339679,"python":53.03236333967909,"agree_to_the_cent":true},{"cell":"D21","what":"land-to-building ratio","excel":3.376285014958,"python":3.376285014957846,"agree_to_the_cent":true},{"cell":"D43","what":"adjusted price per sq ft with no adjustments entered","excel":"","python":"","agree_to_the_cent":true},{"cell":"C49","what":"indicated value with no reconciliation entered","excel":"","python":"","agree_to_the_cent":true},{"cell":"D43 (test copy)","what":"adjusted price per sq ft, test inputs","excel":67.2374090291,"python":67.23740902909982,"agree_to_the_cent":true},{"cell":"D44 (test copy)","what":"gross adjustment, test inputs","excel":0.457442138462,"python":0.45744213846153853,"agree_to_the_cent":true},{"cell":"C49 (test copy)","what":"indicated value, test inputs","excel":380000.0,"python":380000.0,"agree_to_the_cent":true}]},"tamper":[{"test":"write into a formula cell (D20, price per sq ft)","expected":"refused","result":"refused","detail":"D20 holds a formula; formula cells are never written","passed":true},{"test":"formula edited by hand (D20 multiplied by 1.1)","expected":"detected","result":"detected","detail":["/sheets/Sales Comparison/formulas/D20: '=IF(OR(D9=\"\",D10=\"\"),\"\",D9/D10)' -> '=IF(OR(D9=\"\",D10=\"\"),\"\",D9/D10*1.1)'"],"hash_after":"cc9a903b86733522a0f18f2323a5c950cf7674d749552db655da34b6b869daa6","passed":true},{"test":"defined name repointed (SqFtPerAcre to Settings!B4), no formula text changed","expected":"detected","result":"detected","detail":["/defined_names/SqFtPerAcre/refers_to: 'Settings!$B$2' -> 'Settings!$B$4'"],"hash_after":"d06f88aad6d658e0fc3b3deea077985ce7575c61c0795bb2fa2ea52225e10820","passed":true},{"test":"protected constant changed (Settings!B2, 43,560 to 43,000), no formula text changed","expected":"detected","result":"detected","detail":["/sheets/Settings/constants/B2: ['int', '43560'] -> ['int', '43000']"],"hash_after":"32dbea1d39efe866b41fb72e879d3c52079bfb9da0ca3ac45887a2dbd86495f2","passed":true}],"audit":{"rows":24,"refusals":[{"role":"comp_extractor","statement":"UPDATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_extractor","statement":"DELETE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_extractor","statement":"TRUNCATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_reviewer","statement":"UPDATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_reviewer","statement":"DELETE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_reviewer","statement":"TRUNCATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_writer","statement":"UPDATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_writer","statement":"DELETE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_writer","statement":"TRUNCATE","result":"refused","error":"permission denied for table audit_log","passed":true}],"chain":true,"owner_edit":[3]},"model":{"name":"claude-sonnet-5","in":16203,"out":8981},"steps":[{"n":1,"step":"database","outcome":"started","server":"PostgreSQL 14.23 (Homebrew)","roles":["comp_extractor","comp_reviewer","comp_writer"]},{"n":2,"step":"ingest","outcome":"stored","doc":"county","file_sha256":"309759bbde72a1e0450a1179655d30495bfbb02ea9c9540be7281f2ba1bc59f7","text_source":"county open-data record"},{"n":3,"step":"ingest","outcome":"stored","doc":"minutes","file_sha256":"57a896a45d1b7c6c9a8edf208668337da84e720ca72d1e0a44026fdcecc2897b","text_source":"tesseract-ocr"},{"n":4,"step":"ingest","outcome":"stored","doc":"mls-cb","file_sha256":"575730eaf076880006f86e579cb59853a405c3367587277121ac9958490ceed7","text_source":"pdf-text"},{"n":5,"step":"ingest","outcome":"stored","doc":"mls-coalition","file_sha256":"cabb482c52157caf498100c68f336d13751143234a5e493483a278ce428850f4","text_source":"pdf-text"},{"n":6,"step":"model_call","outcome":"recorded_response_replayed","model":"claude-sonnet-5","request_id":"req_011CfZeqxtAmKx3eJgRUrbgN","input_tokens":16203,"output_tokens":8981},{"n":7,"step":"check_facts","outcome":"done","verified":46,"rejected":4,"rejected_facts":[{"id":15,"doc":"minutes","meaning_code":"offer_acceptance_date","value":"2025-09-11","quote":"Thursday, September 11, 2025","reason":"nothing on or beside the cited line says this is an offer acceptance date"},{"id":38,"doc":"mls-cb","meaning_code":"sale_condition","value":"sale includes additional land parcel in rear providing paved parking, total 21 spaces","quote":"The sale includes the additional land parcel in the rear that\nprovides additional paved parking, bringing the off-street parking to a total of 21 spaces.","reason":"the value adds words the quote does not contain: providing"},{"id":40,"doc":"mls-coalition","meaning_code":"sold_price","value":"390000","quote":"$390,000","reason":"nothing on or beside the cited line says this is a sold price"},{"id":50,"doc":"mls-coalition","meaning_code":"parking","value":"Lighted Parking, Paved Parking, Parking Lot, 4+ Spaces, 3+ Spaces, 2+ Spaces, 1+ Spaces","quote":"Parking Features: Lighted Parking,Paved Parking,Parking Lot,4+ Spaces,3+ Spaces,2+\nSpaces,1+ Spaces","reason":"value 'Lighted Parking, Paved Parking, Parking Lot, 4+ Spaces, 3+ Spaces, 2+ Spaces, 1+ Spaces' is not a number"}]},{"n":8,"step":"match","outcome":"transaction_created_from_recorded_instrument","doc":"county","transaction_id":1,"instrument_no":"2025031513","sale_date":"2025-10-10","price":"390000","parcels":["81532611565915","81532611564864"]},{"n":9,"step":"match","outcome":"resale_kept_apart","doc":"county","transaction_id":2,"sale_period":"1997-08","price":"160000"},{"n":10,"step":"match","outcome":"refused_by_database","what":"second transaction row on the same recorded instrument","error":"duplicate key value violates unique constraint \"sale_transaction_instrument_no_key\""},{"n":11,"step":"match","outcome":"same_sale_other_source","doc":"mls-cb","transaction_id":1,"reasons":{"address_matches_property":true,"sold_price_equals_recorded_price":true,"sold_date_equals_recorded_date":true,"lot_number_is_parcel_suffix":true,"carries_recorded_instrument":false}},{"n":12,"step":"ingest","outcome":"replay_ignored","doc":"mls-cb","file_sha256":"575730eaf076880006f86e579cb59853a405c3367587277121ac9958490ceed7"},{"n":13,"step":"match","outcome":"held_for_review","doc":"minutes","transaction_id":1,"reasons":{"document_kind":"council authorization, not a closing","accepted_offer_equals_recorded_price":true,"meeting_to_recorded_sale_days":29,"carries_recorded_instrument":false}},{"n":14,"step":"match","outcome":"property_facts","doc":"mls-coalition","transaction_id":null,"reasons":{"address_matches_property":true,"sold_price_equals_recorded_price":false,"sold_date_equals_recorded_date":false,"lot_number_is_parcel_suffix":false,"carries_recorded_instrument":false}},{"n":15,"step":"review","outcome":"match_confirmed","doc":"minutes","confirmed_by":"demo operator","linked_as":"authorization that preceded the recorded sale"},{"n":16,"step":"assemble","outcome":"evidence_checked","comp_id":1,"entry":{"address":{"value":"3540 St. Lawrence Ave, Reading, PA 19606 (with rear parcel)","facts":[4,6,8],"rule":"county site address; the recorded instrument conveys two parcels"},"parcels":{"value":"81532611565915; 81532611564864","facts":[6,8],"rule":"parcels on the recorded instrument"},"instrument":{"value":"2025031513","facts":[3],"rule":"county instrument number"},"sale_date":{"value":"2025-10-10","facts":[2,19],"rule":"county sale date; MLS agrees"},"sale_price":{"value":390000.0,"facts":[1,18,13],"rule":"county sale price; MLS sold price and the council's accepted offer agree"},"gba_sf":{"value":7354.0,"facts":[12,41],"rule":"county assessor above-grade area preferred over listing figures","conflict":{"value":6000.0,"fact":41,"note":"a listing site shows 6,000 sq ft"}},"land_acres":{"value":0.57,"facts":[7,9,26],"rule":"sum of the parcels on the recorded instrument","conflict":{"value":0.31,"fact":26,"note":"the MLS lot size covers the front parcel only"}},"year_built":{"value":1890.0,"facts":[10,28],"rule":"county record preferred over an MLS estimate","conflict":{"value":1900.0,"fact":28,"note":"MLS year built is marked estimated"}},"zoning":{"value":"BC and R-6","facts":[30],"rule":"MLS, only source"},"property_rights":{"value":"Fee Simple (reported by MLS)","facts":[32],"rule":"reported, not verified"},"sale_conditions":{"value":"Offer accepted by the borough council with no contingencies and closing in 30 days or as soon as possible (minutes of 9/11/2025). Listed at $575,000 on 1/10/2025, reduced to $499,000 on 7/15/2025. Excluded: furniture, fixtures, equipment and inventory of seller.","facts":[16,22,21,24,23,33],"rule":"reported facts, no verdict on arm's length"},"sources":{"value":"Berks County assessment record (open data, retrieved 9/30/2026); St. Lawrence Borough Council minutes, 9/11/2025; MLS PABK2052516 on two listing sites","facts":[],"rule":"documents behind the facts above"},"verification":{"value":"Public records reviewed; no transaction-party verification performed","facts":[],"rule":"state of verification"}},"notes":{"mls_price_per_sf":{"fact":25,"value":83.17,"reading":"499,000 / 6,000 sq ft = 83.17: the listing's price per sq ft uses the reduced asking price, so it is not a sale unit price"}}},{"n":17,"step":"write","outcome":"refused","what":"write before approval","reason":"no record approved for entry is visible to the writer role","file_created":false},{"n":18,"step":"approve","outcome":"approved_for_demo_entry","approved_by":"demo operator (Frederic de Lavenne de Choulot), not an appraiser","version_sha256":"b1034c632b6a336e53cb1aee4fe8f5351b733a72c7a762bf23d68171f0ca0f68","template_sha256":"fcc3a2607d15be5c39ac14f9bfc098fc3bd2ea93d33c1c36b362c8a9257a390b","destination":"Sales Comparison!D5:D17 (Comparable 1)","appraiser_verification":"pending"},{"n":19,"step":"write","outcome":"refused","what":"building area changed to 6,000 after approval","reason":"the record, its evidence, the input map or the template changed after approval","file_created":false},{"n":20,"step":"write","outcome":"worker_stopped_after_save","note":"simulated: the workbook was saved, the completion was never recorded","file_exists":true,"file_sha256":"51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd"},{"n":21,"step":"write","outcome":"resumed_without_rewrite","op_id":"06d52856-e7a6-44a9-b300-f0da86c0a484","output_sha256":"51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd"},{"n":22,"step":"write","outcome":"already_written","what":"the same approval run again","output_sha256":"51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd"},{"n":23,"step":"write","outcome":"operations","rows":[["done",1]]},{"n":24,"step":"audit","outcome":"append_only_for_tested_application_roles","refusals":[{"role":"comp_extractor","statement":"UPDATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_extractor","statement":"DELETE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_extractor","statement":"TRUNCATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_reviewer","statement":"UPDATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_reviewer","statement":"DELETE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_reviewer","statement":"TRUNCATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_writer","statement":"UPDATE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_writer","statement":"DELETE","result":"refused","error":"permission denied for table audit_log","passed":true},{"role":"comp_writer","statement":"TRUNCATE","result":"refused","error":"permission denied for table audit_log","passed":true}],"chain_verified":true,"owner_edit_detected_at_rows":[3],"rows":24}],"attribution":"Information is based on geospatial data from the County of Berks."};
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const narrow = matchMedia("(max-width: 900px)");
+const short = (h) => h.slice(0, 12) + "…" + h.slice(-6);
+
+function lines(spans) {
+  const n = spans.map((s) => +s.split(":l")[1]);
+  return n.length === 1 ? "line " + n[0] : "lines " + n[0] + " to " + n[n.length - 1];
+}
+const num = (v) => (/^\d+(\.\d+)?$/.test(v) && v.length > 3 && !/^(19|20)\d\d$/.test(v) && v.length < 9 ? Number(v).toLocaleString("en-US") : v);
+
+function sourceLine(e) {
+  const doc = D.docs[e.doc];
+  const where = e.doc === "county" ? "field " + e.spans[0].split(":").slice(2).join(":") :
+    (e.page ? "page " + e.page + ", " + lines(e.spans) : "");
+  return { name: doc.name, kind: doc.kind + (where ? ", " + where : "") };
+}
+
+function evidenceHTML(e) {
+  const s = sourceLine(e);
+  const cls = e.status === "rejected" ? "rejected" : (e.role === "conflict" ? "conflict" : "");
+  let check;
+  if (e.status === "rejected") check = `<p class="check no">Held back: ${esc(e.reason)}.</p>`;
+  else if (e.derived) check = `<p class="check ok">Checked: ${e.derived.operands.map((n) => n.toLocaleString("en-US")).join(" + ")} = ${Number(e.value).toLocaleString("en-US")}, each on the record.</p>`;
+  else check = `<p class="check ok">Checked: quote found on the cited line; value ${esc(num(e.value))} is what it says.</p>`;
+  const lead = e.role === "conflict" ? `<p class="kind">Another source says otherwise:</p>` : "";
+  const media = e.img ? `<img src="${e.img}" alt="Scanned minutes, page ${e.page}, with the cited lines highlighted">` : "";
+  return `<div class="ev ${cls}">${lead}<div class="who">${esc(s.name)}</div><div class="kind">${esc(s.kind)}</div>${media}${e.img ? `<p class="kind">OCR text of the highlighted lines:</p>` : ""}<blockquote>${esc(e.quote)}</blockquote>${check}</div>`;
+}
+
+function cellmapHTML(cell) {
+  const row = +cell.slice(1);
+  const rows = D.grid.filter((g) => g.row <= 17 || g.row === 20 || g.row === 21);
+  const i = rows.findIndex((g) => g.row === row);
+  const start = Math.min(Math.max(0, i - 1), rows.length - 3);
+  const win = rows.slice(start, start + 3);
+  return `<div class="cellmap"><p class="cap">Written to Sales Comparison!${cell}</p><table>
+    <thead><tr><th class="rn"></th><th>B</th><th>D, Comparable 1</th></tr></thead><tbody>${
+    win.map((g) => `<tr><th class="rn">${g.row}</th><td class="b">${esc(g.label)}</td><td class="${g.kind === "fact" ? "fact" : ""}${g.row === row ? " hit" : ""}">${esc(g.value)}</td></tr>`).join("")
+  }</tbody></table></div>`;
+}
+
+const rank = (e) => (e.role === "conflict" ? 9 : e.img ? 0 : e.doc === "county" ? 1 : 2);
+
+function show(kind, idx, btn) {
+  document.querySelectorAll("[aria-pressed]").forEach((b) => b.setAttribute("aria-pressed", "false"));
+  btn.setAttribute("aria-pressed", "true");
+  const p = $("#panel");
+  if (kind === "row") {
+    const f = D.sheet[idx];
+    p.innerHTML = `<p class="cap">${esc(f.label)}</p><h2>${esc(f.display.split("\n")[0])}${f.display.includes("\n") ? " and 1 more" : ""}</h2>
+      <p class="rule">Rule applied: ${esc(f.rule)}.</p>
+      ${cellmapHTML(f.cell)}
+      ${f.evidence.length ? [...f.evidence].sort((a, b) => rank(a) - rank(b)).map(evidenceHTML).join("") : `<div class="ev"><p class="check">Written by the entry rule, from no single document.</p></div>`}`;
+  } else {
+    const e = D.held[idx];
+    p.innerHTML = `<p class="cap">Held back, not written</p><h2>${esc(e.value)}</h2>
+      <p class="rule">Offered by the model as: ${esc(e.meaning)}. It stays pending until someone resolves it.</p>${evidenceHTML(e)}`;
+  }
+  if (narrow.matches) (btn.classList.contains("key") ? $("#keys") : btn).after(p);
+  else if (p.parentElement !== $(".desk")) $(".desk").appendChild(p);
+  p.classList.remove("swap"); void p.offsetWidth; p.classList.add("swap");
+}
+
+function renderSheet() {
+  const srcs = (f) => { const n = f.evidence.filter((e) => e.role !== "conflict").length; return n ? `<b>${n}</b> source${n > 1 ? "s" : ""}` : "rule"; };
+  $("#keys").innerHTML = D.sheet.slice(0, 3).map((f, i) => `<button class="key" data-i="${i}" aria-pressed="false"><span class="lab">${esc(f.label)}</span><span class="big">${esc(f.display)}</span><span class="src">${srcs(f)}, ${f.cell}</span></button>`).join("");
+  document.querySelectorAll("#keys .key").forEach((b) => b.addEventListener("click", () => show("row", +b.dataset.i, b)));
+  $("#sheet").innerHTML = D.sheet.map((f, i) => {
+    if (i < 3) return "";
+    const n = f.evidence.filter((e) => e.role !== "conflict").length;
+    const long = f.key === "sale_conditions" || f.key === "verification" || f.key === "address";
+    return `<button class="row${long ? " long" : ""}" data-i="${i}" aria-pressed="false">
+      <span class="lab">${esc(f.label)}</span>
+      <span class="val">${esc(f.display)}${f.conflict ? `<span class="flag">Conflict: ${esc(f.conflict)}.</span>` : ""}</span>
+      <span class="src">${n ? `<b>${n}</b> source${n > 1 ? "s" : ""}` : "rule"}, ${f.cell}</span></button>`;
+  }).join("");
+  document.querySelectorAll("#sheet .row").forEach((b) => b.addEventListener("click", () => show("row", +b.dataset.i, b)));
+  const pp = D.price_per_sf;
+  $("#calc").innerHTML = `Calculated by the workbook, not entered: <b>$${pp.value.toFixed(2)} per sq ft</b> = $${pp.price.toLocaleString("en-US")} ÷ ${pp.gba.toLocaleString("en-US")} sq ft, cell D20, recalculated by Excel. The listing's own $83.17 per sq ft is ${esc(D.notes.mls_price_per_sf.reading.split(":")[0])}: the reduced asking price over 6,000 sq ft, not a sale unit price.`;
+  $("#held").innerHTML = D.held.map((e, i) => `<li><button data-i="${i}" aria-pressed="false"><span class="q">“${esc(e.quote.length > 70 ? e.quote.slice(0, 68) + "…" : e.quote)}”</span><span class="why">${esc(D.docs[e.doc].name)}: ${esc(e.reason)}.</span></button></li>`).join("");
+  document.querySelectorAll("#held button").forEach((b) => b.addEventListener("click", () => show("held", +b.dataset.i, b)));
+}
+
+function tidy(p) {
+  return p.replace(/^\/sheets\/[^/]+\/formulas\/(\w+): '(.*)' -> '(.*)'$/, "Formula $1 became $3.")
+    .replace(/^\/defined_names\/(\w+)\/refers_to: '(.*)' -> '(.*)'$/, "Name $1 now points to $3.")
+    .replace(/^\/sheets\/(\w+)\/constants\/(\w+): \['\w+', '(.*)'\] -> \['\w+', '(.*)'\]$/, "Constant $1!$2 changed from $3 to $4.");
+}
+
+function renderRun() {
+  const S = D.steps, by = (o, doc) => S.find((s) => s.outcome === o && (!doc || s.doc === doc));
+  const chk = S.find((s) => s.step === "check_facts");
+  const w = S.filter((s) => s.step === "write");
+  const t = D.tamper;
+  const items = [
+    ["read", "", `Four documents read into staging, each with its SHA-256 and page text layer. The same listing file dropped in a second time was recognized by its hash and ignored.`, `county record, council minutes (scanned, OCR), two listing pages`],
+    ["checked", "", `${chk.verified + chk.rejected} facts proposed: ${D.model.name.replace("claude-sonnet-5", "Claude Sonnet 5")} read the three PDFs in one call (${D.model.in.toLocaleString("en-US")} tokens in), the county record was mapped field by field. Code verified ${chk.verified} against their cited lines and held back ${chk.rejected}.`, `Each quote must appear on the line it cites, the line must say what the value means, and the value must be what the quote says.`],
+    ["matched", "", `The recorded instrument ${by("transaction_created_from_recorded_instrument").instrument_no} created the sale, covering two parcels. A second row on the same instrument was refused by the database.`, by("refused_by_database").error],
+    ["kept apart", "", `The parcel's ${by("resale_kept_apart").sale_period} sale at $${Number(by("resale_kept_apart").price).toLocaleString("en-US")} became its own transaction on the same property, not a duplicate.`, ""],
+    ["matched", "", `The MLS record joined the sale: same date, same price, same address, lot number matching the parcel id.`, `No instrument number on the listing, so the match rests on those four facts.`],
+    ["held", "", `The council vote was held for review: an authorization, not a closing, 29 days before the recorded sale. The reviewer then linked it as the authorization that preceded the sale.`, ""],
+    ["refused", "refused", `Write before approval.`, w[0].reason],
+    ["approved", "approved", `Approved for demo entry by the demo operator, bound to one version of the record, its evidence, the input map, the template and the destination cells.`, `Version ${short(by("approved_for_demo_entry").version_sha256)}. Appraiser verification stays pending.`],
+    ["refused", "refused", `Building area changed to 6,000 sq ft after approval, then a write attempted.`, w[1].reason],
+    ["resumed", "", `The worker stopped after saving the workbook and before recording completion. The next run found the saved file, recognized its hash, verified it and finished without writing again.`, `A third run of the same approval did nothing: one completed write per approval.`],
+    ["detected", "detected", `Tampering on copies of the delivered file: ${t.slice(1).map((x) => x.test.split(" (")[0]).join("; ")}. Each was detected. Writing into a formula cell was refused.`, t.slice(1).map((x) => tidy(x.detail[0])).join(" ")],
+    ["recalculated", "", `Excel for Mac ${D.excel.version} opened this exact file and recalculated it in full. Price per sq ft agrees to the cent with an independent recomputation; adjusted lines with no adjustments entered stay blank, not zero.`, `Formulas checked on a separate test copy with typed test inputs: ${D.excel.comparison.filter((c) => c.cell.includes("test")).every((c) => c.agree_to_the_cent) ? "all agree to the cent" : "disagreement"}.`],
+    ["audited", "", `${D.audit.rows} audit events, each chained to the previous one by hash. Update, delete and truncate were refused for all three application roles.`, `Append-only for the tested application roles. An edit made with owner rights still shows: the chain breaks at row ${D.audit.owner_edit.join(", ")}.`],
+  ];
+  $("#seq").innerHTML = items.map(([o, c, what, det]) => `<li><span class="out ${c}">${esc(o[0].toUpperCase() + o.slice(1))}</span><span class="what">${esc(what)}${det ? `<span class="det">${esc(det)}</span>` : ""}</span></li>`).join("");
+
+  const h = D.hashes;
+  $("#parts").textContent = `${h.parts_changed.length} of ${h.parts} package parts changed: the grid sheet. Inside it, ${h.cells_changed.length} cells changed (${h.cells_changed[0]} to ${h.cells_changed[h.cells_changed.length - 1]}), all approved inputs. ${h.counts.formulas} formulas, ${h.counts.defined_names} defined names and ${h.counts.data_validations} validation rules, one hidden sheet.`;
+  $("#hash").innerHTML = `<span>Before</span><code>${h.before}</code><span>After</span><code>${h.after}</code>`;
+  $("#excel").textContent = D.excel.same_file ? `Excel recalculated the file with SHA-256 ${short(D.excel.sha)}, the delivered file.` : "";
+  const F = D.files;
+  $("#files").innerHTML = [
+    ["template.xlsx", "The grid as built, never modified", F.template.sha256],
+    ["comparable-1-entered.xlsx", "Delivered: the template with the approved sale written into column D", F.delivered.sha256],
+    ["formula-check-test-inputs.xlsx", "Test copy with typed test adjustments, used only to check the formulas; not an appraisal", F.test_copy.sha256],
+  ].map(([n, d, s]) => `<li><a href="files/${n}" download>${n}</a><small>${esc(d)}</small><small>SHA-256 ${s}</small></li>`).join("");
+  $("#attr").textContent = D.attribution + " Council minutes from stlawboro.us. Listing facts quoted from MLS PABK2052516 as shown on coldwellbankerhomes.com and coalitionpg.com; listing pages are not republished.";
+}
+
+renderSheet();
+renderRun();
+show("row", 0, document.querySelector("#keys .key"));
+narrow.addEventListener("change", () => { const b = document.querySelector('[aria-pressed="true"]'); if (b) b.click(); });
+</script>
+</body>
+</html>

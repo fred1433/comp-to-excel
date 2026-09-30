@@ -1,0 +1,429 @@
+{
+ "extraction": {
+  "facts": [
+   {
+    "doc": "minutes",
+    "meaning_code": "accepted_offer_price",
+    "meaning": "Council motion accepting an offer on the old Borough Hall property, no contingencies, closing in 30 days or ASAP",
+    "value": "390000",
+    "span_ids": [
+     "minutes:p3:l23",
+     "minutes:p3:l24",
+     "minutes:p3:l25",
+     "minutes:p3:l26"
+    ],
+    "quote": "To take the offer that was presented on the sale of 3540 St. Lawrence Ave. Reading, PA 19606 for $390,000.00 with no contingencies and closing in 30 days or as soon as possible."
+   },
+   {
+    "doc": "minutes",
+    "meaning_code": "address",
+    "meaning": "Address of the property being sold, identified as the old Borough Hall, discussed in executive session",
+    "value": "3540 St. Lawrence Ave. Reading, PA 19606",
+    "span_ids": [
+     "minutes:p3:l12"
+    ],
+    "quote": "real estate sale of 3540 St. Lawrence Ave. Reading, PA 19606 ( old Borough Hall)"
+   },
+   {
+    "doc": "minutes",
+    "meaning_code": "offer_acceptance_date",
+    "meaning": "Date of the Council meeting at which the offer-acceptance motion was made",
+    "value": "2025-09-11",
+    "span_ids": [
+     "minutes:p1:l3"
+    ],
+    "quote": "Thursday, September 11, 2025"
+   },
+   {
+    "doc": "minutes",
+    "meaning_code": "sale_condition",
+    "meaning": "Terms attached to the accepted offer: no contingencies, quick close",
+    "value": "no contingencies, closing in 30 days or as soon as possible",
+    "span_ids": [
+     "minutes:p3:l23",
+     "minutes:p3:l24"
+    ],
+    "quote": "for $390,000.00 with no contingencies and closing in 30 days or as soon as possible"
+   },
+   {
+    "doc": "minutes",
+    "meaning_code": "seller",
+    "meaning": "Governmental body whose property (old Borough Hall) is being sold, implied seller",
+    "value": "Borough of St. Lawrence",
+    "span_ids": [
+     "minutes:p1:l1"
+    ],
+    "quote": "BOROUGH OF ST. LAWRENCE"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "sold_price",
+    "meaning": "Final sold price of the property per MLS listing summary",
+    "value": "390000",
+    "span_ids": [
+     "mls-cb:p1:l13"
+    ],
+    "quote": "Sold For: $390,000"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "sale_date",
+    "meaning": "Date the sale closed per MLS price/sales history table",
+    "value": "2025-10-10",
+    "span_ids": [
+     "mls-cb:p3:l21"
+    ],
+    "quote": "10/10/2025"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "sold_price",
+    "meaning": "Sold price listed in MLS price/sales history table",
+    "value": "390000",
+    "span_ids": [
+     "mls-cb:p3:l31"
+    ],
+    "quote": "$390,000"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "listing_date",
+    "meaning": "Original listing date per MLS price/sales history table",
+    "value": "2025-01-10",
+    "span_ids": [
+     "mls-cb:p3:l23"
+    ],
+    "quote": "1/10/2025"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "asking_price",
+    "meaning": "Original list (asking) price per MLS history table",
+    "value": "575000",
+    "span_ids": [
+     "mls-cb:p3:l33"
+    ],
+    "quote": "$575,000"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "price_change_date",
+    "meaning": "Date the asking price was reduced per MLS history table",
+    "value": "2025-07-15",
+    "span_ids": [
+     "mls-cb:p3:l22"
+    ],
+    "quote": "7/15/2025"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "asking_price",
+    "meaning": "Reduced asking price prior to sale per MLS history table",
+    "value": "499000",
+    "span_ids": [
+     "mls-cb:p3:l32"
+    ],
+    "quote": "$499,000"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "price_per_sf_reported",
+    "meaning": "Price per square foot as reported by MLS listing",
+    "value": "83.17",
+    "span_ids": [
+     "mls-cb:p2:l4"
+    ],
+    "quote": "Price Per Sq. Ft.: $83.17"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "lot_area",
+    "meaning": "Lot size in acres per assessor source",
+    "value": "0.31",
+    "span_ids": [
+     "mls-cb:p1:l27"
+    ],
+    "quote": "Lot Size (Acres): 0.31"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "lot_area",
+    "meaning": "Lot size in square feet per assessor source",
+    "value": "13503",
+    "span_ids": [
+     "mls-cb:p1:l28"
+    ],
+    "quote": "Lot Size (Sq. Ft.): 13,503"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "year_built",
+    "meaning": "Estimated year the building was constructed",
+    "value": "1900",
+    "span_ids": [
+     "mls-cb:p2:l39"
+    ],
+    "quote": "Year Built: 1900"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "stories",
+    "meaning": "Number of stories/levels in the building",
+    "value": "2",
+    "span_ids": [
+     "mls-cb:p2:l38"
+    ],
+    "quote": "Stories/Levels: 2"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "zoning",
+    "meaning": "Zoning designation reported for the property",
+    "value": "BC AND R-6",
+    "span_ids": [
+     "mls-cb:p1:l41"
+    ],
+    "quote": "Zoning: BC AND R-6"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "parcel_or_lot_id",
+    "meaning": "Lot number identifying the parcel",
+    "value": "5915",
+    "span_ids": [
+     "mls-cb:p2:l20"
+    ],
+    "quote": "Lot Number: 5915"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "property_rights",
+    "meaning": "Type of ownership interest conveyed",
+    "value": "Fee Simple",
+    "span_ids": [
+     "mls-cb:p2:l16"
+    ],
+    "quote": "Ownership: Fee Simple"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "exclusion",
+    "meaning": "Items excluded from the sale of the property",
+    "value": "Furniture, Fixtures, Equipment and Inventory of Seller",
+    "span_ids": [
+     "mls-cb:p2:l18"
+    ],
+    "quote": "Exclusions: Furniture, Fixtures, Equipment and Inventory of Seller"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "parking",
+    "meaning": "Total off-street parking spaces included with the sale",
+    "value": "21",
+    "span_ids": [
+     "mls-cb:p2:l3"
+    ],
+    "quote": "Total Spaces: 21"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "listing_broker",
+    "meaning": "Broker/agent who listed the property for sale",
+    "value": "RE/MAX Of Reading, Randy L Weidner",
+    "span_ids": [
+     "mls-cb:p2:l42"
+    ],
+    "quote": "Listed by RE/MAX Of Reading, Randy L Weidner"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "selling_broker",
+    "meaning": "Broker/agents credited with the sale (buyer side)",
+    "value": "Atlas Land and Homes, Israel Gonzalez and Marcus Gonzalez",
+    "span_ids": [
+     "mls-cb:p2:l43"
+    ],
+    "quote": "Sold by Atlas Land and Homes, Israel Gonzalez and Atlas Land and Homes, Marcus Gonzalez"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "address",
+    "meaning": "Property address as listed in MLS",
+    "value": "3540 St Lawrence Ave Reading, PA 19606",
+    "span_ids": [
+     "mls-cb:p1:l3"
+    ],
+    "quote": "3540 St Lawrence Ave Reading, PA 19606"
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "sale_condition",
+    "meaning": "Description noting sale includes an additional rear land parcel providing parking",
+    "value": "sale includes additional land parcel in rear providing paved parking, total 21 spaces",
+    "span_ids": [
+     "mls-cb:p1:l9",
+     "mls-cb:p1:l10"
+    ],
+    "quote": "The sale includes the additional land parcel in the rear that\nprovides additional paved parking, bringing the off-street parking to a total of 21 spaces."
+   },
+   {
+    "doc": "mls-cb",
+    "meaning_code": "other",
+    "meaning": "MLS listing identifier for the property",
+    "value": "PABK2052516",
+    "span_ids": [
+     "mls-cb:p1:l18"
+    ],
+    "quote": "MLS ID: PABK2052516"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "sold_price",
+    "meaning": "Sold price shown on real estate portal listing",
+    "value": "390000",
+    "span_ids": [
+     "mls-coalition:p1:l6"
+    ],
+    "quote": "$390,000"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "gross_building_area",
+    "meaning": "Building square footage reported alongside acreage on listing summary",
+    "value": "6000",
+    "span_ids": [
+     "mls-coalition:p1:l8"
+    ],
+    "quote": "6,000"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "lot_area",
+    "meaning": "Lot acreage reported on listing summary",
+    "value": "0.31",
+    "span_ids": [
+     "mls-coalition:p1:l9"
+    ],
+    "quote": "0.31"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "sale_condition",
+    "meaning": "Status of the listing indicating the transaction is closed, with days on site",
+    "value": "CLOSED, 628 days on site",
+    "span_ids": [
+     "mls-coalition:p1:l14"
+    ],
+    "quote": "Status: CLOSED | Days on site: 628"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "zoning",
+    "meaning": "Zoning split between front (Borough Center) and rear (R-6 Urban Residential) parcels",
+    "value": "Front Parcel is Borough Center and the rear parcel is R-6 Urban Residential",
+    "span_ids": [
+     "mls-coalition:p3:l32",
+     "mls-coalition:p3:l33"
+    ],
+    "quote": "Zoning: Front Parcel is Borough Center and the rear parcel is R-6 Urban\nResidential"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "lot_area",
+    "meaning": "Lot/acreage figure listed under highlights",
+    "value": "0.31",
+    "span_ids": [
+     "mls-coalition:p3:l7"
+    ],
+    "quote": "0.31"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "year_built",
+    "meaning": "Year built listed under property highlights",
+    "value": "1900",
+    "span_ids": [
+     "mls-coalition:p3:l9"
+    ],
+    "quote": "1900"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "listing_broker",
+    "meaning": "Listing agent and brokerage per portal listing",
+    "value": "Randy L Weidner, RE/MAX Of Reading",
+    "span_ids": [
+     "mls-coalition:p3:l2",
+     "mls-coalition:p3:l3"
+    ],
+    "quote": "Randy L Weidner\nRE/MAX Of Reading , 6106702770."
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "address",
+    "meaning": "Property address as shown on real estate portal",
+    "value": "3540 Saint Lawrence Ave, Reading, PA 19606",
+    "span_ids": [
+     "mls-coalition:p1:l5"
+    ],
+    "quote": "3540 Saint Lawrence Ave, Reading, PA 19606"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "other",
+    "meaning": "Listing ID matching MLS number",
+    "value": "PABK2052516",
+    "span_ids": [
+     "mls-coalition:p3:l17"
+    ],
+    "quote": "PABK2052516"
+   },
+   {
+    "doc": "mls-coalition",
+    "meaning_code": "parking",
+    "meaning": "Parking features/types available at the property",
+    "value": "Lighted Parking, Paved Parking, Parking Lot, 4+ Spaces, 3+ Spaces, 2+ Spaces, 1+ Spaces",
+    "span_ids": [
+     "mls-coalition:p4:l1",
+     "mls-coalition:p4:l2"
+    ],
+    "quote": "Parking Features: Lighted Parking,Paved Parking,Parking Lot,4+ Spaces,3+ Spaces,2+\nSpaces,1+ Spaces"
+   }
+  ],
+  "not_stated": [
+   "Exact closing/settlement date of the sale (distinct from the accepted-offer date and the MLS 'sold' date, which may differ from actual deed recording date)",
+   "Identity/name of the buyer (only buyer-side brokers/agents are named)",
+   "Deed book/page or recording reference number for the transaction",
+   "Gross building area in a form reconciled across sources (mls-cb lists Above/Below Ground Sq Ft as N/A while mls-coalition shows 6,000 sqft, unclear which is authoritative)",
+   "Any seller concessions, credits, or financing terms as part of the final purchase agreement",
+   "Confirmation that the $390,000 accepted offer in the minutes is identical to the final recorded sale price (no closing statement or settlement sheet provided)",
+   "Full legal description or tax parcel/PIN number for the property",
+   "Buyer's intended use or business type post-sale"
+  ]
+ },
+ "call": {
+  "model": "claude-sonnet-5",
+  "request_id": "req_011CfZeqxtAmKx3eJgRUrbgN",
+  "input_tokens": 16203,
+  "output_tokens": 8981,
+  "stop_reason": "end_turn",
+  "seconds": 72.5,
+  "documents": [
+   {
+    "doc": "minutes",
+    "file_sha256": "57a896a45d1b7c6c9a8edf208668337da84e720ca72d1e0a44026fdcecc2897b",
+    "layer_sha256": "e0a32bb66c45e5ff25f1c56057f33d77269f0ccc05b4755380162bccc04ec572"
+   },
+   {
+    "doc": "mls-cb",
+    "file_sha256": "575730eaf076880006f86e579cb59853a405c3367587277121ac9958490ceed7",
+    "layer_sha256": "382bf538c731623f67e800dd57769c82f00089dbbac23ca3b892e31a89ceac16"
+   },
+   {
+    "doc": "mls-coalition",
+    "file_sha256": "cabb482c52157caf498100c68f336d13751143234a5e493483a278ce428850f4",
+    "layer_sha256": "73d86a8eb0c70e8680575c56acbf5080d644de9fc313c4e136c16f427af26f2d"
+   }
+  ]
+ }
+}

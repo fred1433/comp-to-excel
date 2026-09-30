@@ -1,0 +1,173 @@
+{
+ "parid": "81532611565915",
+ "retrieved_at": "2026-09-30T12:53:34+00:00",
+ "attribution": "Information is based on geospatial data from the County of Berks.",
+ "facts": [
+  {
+   "doc": "county",
+   "meaning_code": "sold_price",
+   "meaning": "sale price on the assessment record",
+   "value": "390000",
+   "span_ids": [
+    "county:81532611565915:PRICE"
+   ],
+   "quote": "PRICE (Sale Price) = 390000"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "sale_date",
+   "meaning": "sale date on the assessment record",
+   "value": "2025-10-10",
+   "span_ids": [
+    "county:81532611565915:SALEDT"
+   ],
+   "quote": "SALEDT (Sale Date) = 2025-10-10"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "other",
+   "meaning": "recorded instrument number",
+   "value": "2025031513",
+   "span_ids": [
+    "county:81532611565915:INSTRUNO"
+   ],
+   "quote": "INSTRUNO (Instrument Number) = 2025031513"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "address",
+   "meaning": "site address on the assessment record",
+   "value": "3540 ST LAWRENCE AV",
+   "span_ids": [
+    "county:81532611565915:ADDRESS"
+   ],
+   "quote": "ADRNO/ADRSTR/ADRSUF (site address) = 3540 ST LAWRENCE AV"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "buyer",
+   "meaning": "owner of record after the sale",
+   "value": "MOLNAR HOLDINGS LLC",
+   "span_ids": [
+    "county:81532611565915:OWN1"
+   ],
+   "quote": "OWN1 (Owner Info 1) = MOLNAR HOLDINGS LLC"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "parcel_or_lot_id",
+   "meaning": "parcel conveyed by this instrument",
+   "value": "81532611565915",
+   "span_ids": [
+    "county:81532611565915:PARID"
+   ],
+   "quote": "PARID 81532611565915: INSTRUNO = 2025031513, ACRES = 0.31, DESC1 = COMMERCIAL BUILDING"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "lot_area",
+   "meaning": "acreage of parcel 81532611565915",
+   "value": "0.31",
+   "span_ids": [
+    "county:81532611565915:ACRES"
+   ],
+   "quote": "PARID 81532611565915: ACRES = 0.31"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "parcel_or_lot_id",
+   "meaning": "parcel conveyed by this instrument",
+   "value": "81532611564864",
+   "span_ids": [
+    "county:81532611564864:PARID"
+   ],
+   "quote": "PARID 81532611564864: INSTRUNO = 2025031513, ACRES = 0.26, DESC1 = None"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "lot_area",
+   "meaning": "acreage of parcel 81532611564864",
+   "value": "0.26",
+   "span_ids": [
+    "county:81532611564864:ACRES"
+   ],
+   "quote": "PARID 81532611564864: ACRES = 0.26"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "year_built",
+   "meaning": "year built on the commercial record",
+   "value": "1890",
+   "span_ids": [
+    "county:81532611565915:YRBLT"
+   ],
+   "quote": "YRBLT (Year Built) = 1890"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "sold_price",
+   "meaning": "earlier sale, 1997-08",
+   "value": "160000",
+   "span_ids": [
+    "county:81532611565915:SALEPR1"
+   ],
+   "quote": "SALEPR1 (Sale Price 1) = 160000; SALEYR1/SALEMTH1 (Sale Year 1/Sale Month 1) = 1997/08"
+  },
+  {
+   "doc": "county",
+   "meaning_code": "gross_building_area",
+   "meaning": "above-grade area, sum of assessor floor lines 1 to 3",
+   "value": "7354",
+   "span_ids": [
+    "county:81532611565915:AREA"
+   ],
+   "derived_from": {
+    "op": "sum",
+    "operands": [
+     2674,
+     2674,
+     2006
+    ]
+   },
+   "quote": "AREA by floor (sq ft) = lower level 1876, lower level 768, floor 1 2674, floor 2 2674, floor 3 2006"
+  }
+ ],
+ "sections": [
+  {
+   "line": 1,
+   "floor_from": "B1",
+   "floor_to": "B1",
+   "area_sf": 1876,
+   "use_type": "086"
+  },
+  {
+   "line": 2,
+   "floor_from": "B1",
+   "floor_to": "B1",
+   "area_sf": 768,
+   "use_type": "082"
+  },
+  {
+   "line": 3,
+   "floor_from": "1",
+   "floor_to": "1",
+   "area_sf": 2674,
+   "use_type": "082"
+  },
+  {
+   "line": 4,
+   "floor_from": "2",
+   "floor_to": "2",
+   "area_sf": 2674,
+   "use_type": "082"
+  },
+  {
+   "line": 5,
+   "floor_from": "3",
+   "floor_to": "3",
+   "area_sf": 2006,
+   "use_type": "086"
+  }
+ ],
+ "below_grade_sf": 2644
+}

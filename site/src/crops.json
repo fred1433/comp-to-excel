@@ -1,0 +1,25 @@
+{
+ "motion": {
+  "file": "minutes-p3-motion.png",
+  "page": 3,
+  "marked": [
+   "minutes:p3:l23",
+   "minutes:p3:l24"
+  ],
+  "size": [
+   1231,
+   201
+  ]
+ },
+ "header": {
+  "file": "minutes-p1-date.png",
+  "page": 1,
+  "marked": [
+   "minutes:p1:l3"
+  ],
+  "size": [
+   447,
+   128
+  ]
+ }
+}

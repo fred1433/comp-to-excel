@@ -1,0 +1,1618 @@
+{
+ "started_at": "2026-09-30T13:19:06+00:00",
+ "files": {
+  "template": {
+   "path": "workbooks/template.xlsx",
+   "sha256": "fcc3a2607d15be5c39ac14f9bfc098fc3bd2ea93d33c1c36b362c8a9257a390b"
+  },
+  "delivered": {
+   "path": "workbooks/comparable-1-entered.xlsx",
+   "sha256": "51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd"
+  },
+  "test_copy": {
+   "path": "workbooks/formula-check-test-inputs.xlsx",
+   "sha256": "f9eb66874ea4589c6721dd711b0072d909b2c3610dcae4c5abf2586e1fa7328e",
+   "note": "test inputs typed by us to exercise the formulas; not an appraisal, not delivered"
+  }
+ },
+ "destination": "Sales Comparison!D5:D17 (Comparable 1)",
+ "steps": [
+  {
+   "n": 1,
+   "step": "database",
+   "outcome": "started",
+   "server": "PostgreSQL 14.23 (Homebrew)",
+   "roles": [
+    "comp_extractor",
+    "comp_reviewer",
+    "comp_writer"
+   ]
+  },
+  {
+   "n": 2,
+   "step": "ingest",
+   "outcome": "stored",
+   "doc": "county",
+   "file_sha256": "309759bbde72a1e0450a1179655d30495bfbb02ea9c9540be7281f2ba1bc59f7",
+   "text_source": "county open-data record"
+  },
+  {
+   "n": 3,
+   "step": "ingest",
+   "outcome": "stored",
+   "doc": "minutes",
+   "file_sha256": "57a896a45d1b7c6c9a8edf208668337da84e720ca72d1e0a44026fdcecc2897b",
+   "text_source": "tesseract-ocr"
+  },
+  {
+   "n": 4,
+   "step": "ingest",
+   "outcome": "stored",
+   "doc": "mls-cb",
+   "file_sha256": "575730eaf076880006f86e579cb59853a405c3367587277121ac9958490ceed7",
+   "text_source": "pdf-text"
+  },
+  {
+   "n": 5,
+   "step": "ingest",
+   "outcome": "stored",
+   "doc": "mls-coalition",
+   "file_sha256": "cabb482c52157caf498100c68f336d13751143234a5e493483a278ce428850f4",
+   "text_source": "pdf-text"
+  },
+  {
+   "n": 6,
+   "step": "model_call",
+   "outcome": "recorded_response_replayed",
+   "model": "claude-sonnet-5",
+   "request_id": "req_011CfZeqxtAmKx3eJgRUrbgN",
+   "input_tokens": 16203,
+   "output_tokens": 8981
+  },
+  {
+   "n": 7,
+   "step": "check_facts",
+   "outcome": "done",
+   "verified": 46,
+   "rejected": 4,
+   "rejected_facts": [
+    {
+     "id": 15,
+     "doc": "minutes",
+     "meaning_code": "offer_acceptance_date",
+     "value": "2025-09-11",
+     "quote": "Thursday, September 11, 2025",
+     "reason": "nothing on or beside the cited line says this is an offer acceptance date"
+    },
+    {
+     "id": 38,
+     "doc": "mls-cb",
+     "meaning_code": "sale_condition",
+     "value": "sale includes additional land parcel in rear providing paved parking, total 21 spaces",
+     "quote": "The sale includes the additional land parcel in the rear that\nprovides additional paved parking, bringing the off-street parking to a total of 21 spaces.",
+     "reason": "the value adds words the quote does not contain: providing"
+    },
+    {
+     "id": 40,
+     "doc": "mls-coalition",
+     "meaning_code": "sold_price",
+     "value": "390000",
+     "quote": "$390,000",
+     "reason": "nothing on or beside the cited line says this is a sold price"
+    },
+    {
+     "id": 50,
+     "doc": "mls-coalition",
+     "meaning_code": "parking",
+     "value": "Lighted Parking, Paved Parking, Parking Lot, 4+ Spaces, 3+ Spaces, 2+ Spaces, 1+ Spaces",
+     "quote": "Parking Features: Lighted Parking,Paved Parking,Parking Lot,4+ Spaces,3+ Spaces,2+\nSpaces,1+ Spaces",
+     "reason": "value 'Lighted Parking, Paved Parking, Parking Lot, 4+ Spaces, 3+ Spaces, 2+ Spaces, 1+ Spaces' is not a number"
+    }
+   ]
+  },
+  {
+   "n": 8,
+   "step": "match",
+   "outcome": "transaction_created_from_recorded_instrument",
+   "doc": "county",
+   "transaction_id": 1,
+   "instrument_no": "2025031513",
+   "sale_date": "2025-10-10",
+   "price": "390000",
+   "parcels": [
+    "81532611565915",
+    "81532611564864"
+   ]
+  },
+  {
+   "n": 9,
+   "step": "match",
+   "outcome": "resale_kept_apart",
+   "doc": "county",
+   "transaction_id": 2,
+   "sale_period": "1997-08",
+   "price": "160000"
+  },
+  {
+   "n": 10,
+   "step": "match",
+   "outcome": "refused_by_database",
+   "what": "second transaction row on the same recorded instrument",
+   "error": "duplicate key value violates unique constraint \"sale_transaction_instrument_no_key\""
+  },
+  {
+   "n": 11,
+   "step": "match",
+   "outcome": "same_sale_other_source",
+   "doc": "mls-cb",
+   "transaction_id": 1,
+   "reasons": {
+    "address_matches_property": true,
+    "sold_price_equals_recorded_price": true,
+    "sold_date_equals_recorded_date": true,
+    "lot_number_is_parcel_suffix": true,
+    "carries_recorded_instrument": false
+   }
+  },
+  {
+   "n": 12,
+   "step": "ingest",
+   "outcome": "replay_ignored",
+   "doc": "mls-cb",
+   "file_sha256": "575730eaf076880006f86e579cb59853a405c3367587277121ac9958490ceed7"
+  },
+  {
+   "n": 13,
+   "step": "match",
+   "outcome": "held_for_review",
+   "doc": "minutes",
+   "transaction_id": 1,
+   "reasons": {
+    "document_kind": "council authorization, not a closing",
+    "accepted_offer_equals_recorded_price": true,
+    "meeting_to_recorded_sale_days": 29,
+    "carries_recorded_instrument": false
+   }
+  },
+  {
+   "n": 14,
+   "step": "match",
+   "outcome": "property_facts",
+   "doc": "mls-coalition",
+   "transaction_id": null,
+   "reasons": {
+    "address_matches_property": true,
+    "sold_price_equals_recorded_price": false,
+    "sold_date_equals_recorded_date": false,
+    "lot_number_is_parcel_suffix": false,
+    "carries_recorded_instrument": false
+   }
+  },
+  {
+   "n": 15,
+   "step": "review",
+   "outcome": "match_confirmed",
+   "doc": "minutes",
+   "confirmed_by": "demo operator",
+   "linked_as": "authorization that preceded the recorded sale"
+  },
+  {
+   "n": 16,
+   "step": "assemble",
+   "outcome": "evidence_checked",
+   "comp_id": 1,
+   "entry": {
+    "address": {
+     "value": "3540 St. Lawrence Ave, Reading, PA 19606 (with rear parcel)",
+     "facts": [
+      4,
+      6,
+      8
+     ],
+     "rule": "county site address; the recorded instrument conveys two parcels"
+    },
+    "parcels": {
+     "value": "81532611565915; 81532611564864",
+     "facts": [
+      6,
+      8
+     ],
+     "rule": "parcels on the recorded instrument"
+    },
+    "instrument": {
+     "value": "2025031513",
+     "facts": [
+      3
+     ],
+     "rule": "county instrument number"
+    },
+    "sale_date": {
+     "value": "2025-10-10",
+     "facts": [
+      2,
+      19
+     ],
+     "rule": "county sale date; MLS agrees"
+    },
+    "sale_price": {
+     "value": 390000.0,
+     "facts": [
+      1,
+      18,
+      13
+     ],
+     "rule": "county sale price; MLS sold price and the council's accepted offer agree"
+    },
+    "gba_sf": {
+     "value": 7354.0,
+     "facts": [
+      12,
+      41
+     ],
+     "rule": "county assessor above-grade area preferred over listing figures",
+     "conflict": {
+      "value": 6000.0,
+      "fact": 41,
+      "note": "a listing site shows 6,000 sq ft"
+     }
+    },
+    "land_acres": {
+     "value": 0.57,
+     "facts": [
+      7,
+      9,
+      26
+     ],
+     "rule": "sum of the parcels on the recorded instrument",
+     "conflict": {
+      "value": 0.31,
+      "fact": 26,
+      "note": "the MLS lot size covers the front parcel only"
+     }
+    },
+    "year_built": {
+     "value": 1890.0,
+     "facts": [
+      10,
+      28
+     ],
+     "rule": "county record preferred over an MLS estimate",
+     "conflict": {
+      "value": 1900.0,
+      "fact": 28,
+      "note": "MLS year built is marked estimated"
+     }
+    },
+    "zoning": {
+     "value": "BC and R-6",
+     "facts": [
+      30
+     ],
+     "rule": "MLS, only source"
+    },
+    "property_rights": {
+     "value": "Fee Simple (reported by MLS)",
+     "facts": [
+      32
+     ],
+     "rule": "reported, not verified"
+    },
+    "sale_conditions": {
+     "value": "Offer accepted by the borough council with no contingencies and closing in 30 days or as soon as possible (minutes of 9/11/2025). Listed at $575,000 on 1/10/2025, reduced to $499,000 on 7/15/2025. Excluded: furniture, fixtures, equipment and inventory of seller.",
+     "facts": [
+      16,
+      22,
+      21,
+      24,
+      23,
+      33
+     ],
+     "rule": "reported facts, no verdict on arm's length"
+    },
+    "sources": {
+     "value": "Berks County assessment record (open data, retrieved 9/30/2026); St. Lawrence Borough Council minutes, 9/11/2025; MLS PABK2052516 on two listing sites",
+     "facts": [],
+     "rule": "documents behind the facts above"
+    },
+    "verification": {
+     "value": "Public records reviewed; no transaction-party verification performed",
+     "facts": [],
+     "rule": "state of verification"
+    }
+   },
+   "notes": {
+    "mls_price_per_sf": {
+     "fact": 25,
+     "value": 83.17,
+     "reading": "499,000 / 6,000 sq ft = 83.17: the listing's price per sq ft uses the reduced asking price, so it is not a sale unit price"
+    }
+   }
+  },
+  {
+   "n": 17,
+   "step": "write",
+   "outcome": "refused",
+   "what": "write before approval",
+   "reason": "no record approved for entry is visible to the writer role",
+   "file_created": false
+  },
+  {
+   "n": 18,
+   "step": "approve",
+   "outcome": "approved_for_demo_entry",
+   "approved_by": "demo operator (Frederic de Lavenne de Choulot), not an appraiser",
+   "version_sha256": "b1034c632b6a336e53cb1aee4fe8f5351b733a72c7a762bf23d68171f0ca0f68",
+   "template_sha256": "fcc3a2607d15be5c39ac14f9bfc098fc3bd2ea93d33c1c36b362c8a9257a390b",
+   "destination": "Sales Comparison!D5:D17 (Comparable 1)",
+   "appraiser_verification": "pending"
+  },
+  {
+   "n": 19,
+   "step": "write",
+   "outcome": "refused",
+   "what": "building area changed to 6,000 after approval",
+   "reason": "the record, its evidence, the input map or the template changed after approval",
+   "file_created": false
+  },
+  {
+   "n": 20,
+   "step": "write",
+   "outcome": "worker_stopped_after_save",
+   "note": "simulated: the workbook was saved, the completion was never recorded",
+   "file_exists": true,
+   "file_sha256": "51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd"
+  },
+  {
+   "n": 21,
+   "step": "write",
+   "outcome": "resumed_without_rewrite",
+   "op_id": "06d52856-e7a6-44a9-b300-f0da86c0a484",
+   "output_sha256": "51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd"
+  },
+  {
+   "n": 22,
+   "step": "write",
+   "outcome": "already_written",
+   "what": "the same approval run again",
+   "output_sha256": "51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd"
+  },
+  {
+   "n": 23,
+   "step": "write",
+   "outcome": "operations",
+   "rows": [
+    [
+     "done",
+     1
+    ]
+   ]
+  },
+  {
+   "n": 24,
+   "step": "audit",
+   "outcome": "append_only_for_tested_application_roles",
+   "refusals": [
+    {
+     "role": "comp_extractor",
+     "statement": "UPDATE",
+     "result": "refused",
+     "error": "permission denied for table audit_log",
+     "passed": true
+    },
+    {
+     "role": "comp_extractor",
+     "statement": "DELETE",
+     "result": "refused",
+     "error": "permission denied for table audit_log",
+     "passed": true
+    },
+    {
+     "role": "comp_extractor",
+     "statement": "TRUNCATE",
+     "result": "refused",
+     "error": "permission denied for table audit_log",
+     "passed": true
+    },
+    {
+     "role": "comp_reviewer",
+     "statement": "UPDATE",
+     "result": "refused",
+     "error": "permission denied for table audit_log",
+     "passed": true
+    },
+    {
+     "role": "comp_reviewer",
+     "statement": "DELETE",
+     "result": "refused",
+     "error": "permission denied for table audit_log",
+     "passed": true
+    },
+    {
+     "role": "comp_reviewer",
+     "statement": "TRUNCATE",
+     "result": "refused",
+     "error": "permission denied for table audit_log",
+     "passed": true
+    },
+    {
+     "role": "comp_writer",
+     "statement": "UPDATE",
+     "result": "refused",
+     "error": "permission denied for table audit_log",
+     "passed": true
+    },
+    {
+     "role": "comp_writer",
+     "statement": "DELETE",
+     "result": "refused",
+     "error": "permission denied for table audit_log",
+     "passed": true
+    },
+    {
+     "role": "comp_writer",
+     "statement": "TRUNCATE",
+     "result": "refused",
+     "error": "permission denied for table audit_log",
+     "passed": true
+    }
+   ],
+   "chain_verified": true,
+   "owner_edit_detected_at_rows": [
+    3
+   ],
+   "rows": 24
+  }
+ ],
+ "facts": [
+  {
+   "id": 1,
+   "doc": "county",
+   "meaning_code": "sold_price",
+   "meaning": "sale price on the assessment record",
+   "value": "390000",
+   "quote": "PRICE (Sale Price) = 390000",
+   "span_ids": [
+    "county:81532611565915:PRICE"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "transaction",
+   "derived_from": null
+  },
+  {
+   "id": 2,
+   "doc": "county",
+   "meaning_code": "sale_date",
+   "meaning": "sale date on the assessment record",
+   "value": "2025-10-10",
+   "quote": "SALEDT (Sale Date) = 2025-10-10",
+   "span_ids": [
+    "county:81532611565915:SALEDT"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "transaction",
+   "derived_from": null
+  },
+  {
+   "id": 3,
+   "doc": "county",
+   "meaning_code": "other",
+   "meaning": "recorded instrument number",
+   "value": "2025031513",
+   "quote": "INSTRUNO (Instrument Number) = 2025031513",
+   "span_ids": [
+    "county:81532611565915:INSTRUNO"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 4,
+   "doc": "county",
+   "meaning_code": "address",
+   "meaning": "site address on the assessment record",
+   "value": "3540 ST LAWRENCE AV",
+   "quote": "ADRNO/ADRSTR/ADRSUF (site address) = 3540 ST LAWRENCE AV",
+   "span_ids": [
+    "county:81532611565915:ADDRESS"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 5,
+   "doc": "county",
+   "meaning_code": "buyer",
+   "meaning": "owner of record after the sale",
+   "value": "MOLNAR HOLDINGS LLC",
+   "quote": "OWN1 (Owner Info 1) = MOLNAR HOLDINGS LLC",
+   "span_ids": [
+    "county:81532611565915:OWN1"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 6,
+   "doc": "county",
+   "meaning_code": "parcel_or_lot_id",
+   "meaning": "parcel conveyed by this instrument",
+   "value": "81532611565915",
+   "quote": "PARID 81532611565915: INSTRUNO = 2025031513, ACRES = 0.31, DESC1 = COMMERCIAL BUILDING",
+   "span_ids": [
+    "county:81532611565915:PARID"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 7,
+   "doc": "county",
+   "meaning_code": "lot_area",
+   "meaning": "acreage of parcel 81532611565915",
+   "value": "0.31",
+   "quote": "PARID 81532611565915: ACRES = 0.31",
+   "span_ids": [
+    "county:81532611565915:ACRES"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 8,
+   "doc": "county",
+   "meaning_code": "parcel_or_lot_id",
+   "meaning": "parcel conveyed by this instrument",
+   "value": "81532611564864",
+   "quote": "PARID 81532611564864: INSTRUNO = 2025031513, ACRES = 0.26, DESC1 = None",
+   "span_ids": [
+    "county:81532611564864:PARID"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 9,
+   "doc": "county",
+   "meaning_code": "lot_area",
+   "meaning": "acreage of parcel 81532611564864",
+   "value": "0.26",
+   "quote": "PARID 81532611564864: ACRES = 0.26",
+   "span_ids": [
+    "county:81532611564864:ACRES"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 10,
+   "doc": "county",
+   "meaning_code": "year_built",
+   "meaning": "year built on the commercial record",
+   "value": "1890",
+   "quote": "YRBLT (Year Built) = 1890",
+   "span_ids": [
+    "county:81532611565915:YRBLT"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 11,
+   "doc": "county",
+   "meaning_code": "sold_price",
+   "meaning": "earlier sale, 1997-08",
+   "value": "160000",
+   "quote": "SALEPR1 (Sale Price 1) = 160000; SALEYR1/SALEMTH1 (Sale Year 1/Sale Month 1) = 1997/08",
+   "span_ids": [
+    "county:81532611565915:SALEPR1"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "transaction",
+   "derived_from": null
+  },
+  {
+   "id": 12,
+   "doc": "county",
+   "meaning_code": "gross_building_area",
+   "meaning": "above-grade area, sum of assessor floor lines 1 to 3",
+   "value": "7354",
+   "quote": "AREA by floor (sq ft) = lower level 1876, lower level 768, floor 1 2674, floor 2 2674, floor 3 2006",
+   "span_ids": [
+    "county:81532611565915:AREA"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": {
+    "op": "sum",
+    "operands": [
+     2674,
+     2674,
+     2006
+    ]
+   }
+  },
+  {
+   "id": 13,
+   "doc": "minutes",
+   "meaning_code": "accepted_offer_price",
+   "meaning": "Council motion accepting an offer on the old Borough Hall property, no contingencies, closing in 30 days or ASAP",
+   "value": "390000",
+   "quote": "To take the offer that was presented on the sale of 3540 St. Lawrence Ave. Reading, PA 19606 for $390,000.00 with no contingencies and closing in 30 days or as soon as possible.",
+   "span_ids": [
+    "minutes:p3:l23",
+    "minutes:p3:l24",
+    "minutes:p3:l25",
+    "minutes:p3:l26"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "authorization",
+   "derived_from": null
+  },
+  {
+   "id": 14,
+   "doc": "minutes",
+   "meaning_code": "address",
+   "meaning": "Address of the property being sold, identified as the old Borough Hall, discussed in executive session",
+   "value": "3540 St. Lawrence Ave. Reading, PA 19606",
+   "quote": "real estate sale of 3540 St. Lawrence Ave. Reading, PA 19606 ( old Borough Hall)",
+   "span_ids": [
+    "minutes:p3:l12"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 15,
+   "doc": "minutes",
+   "meaning_code": "offer_acceptance_date",
+   "meaning": "Date of the Council meeting at which the offer-acceptance motion was made",
+   "value": "2025-09-11",
+   "quote": "Thursday, September 11, 2025",
+   "span_ids": [
+    "minutes:p1:l3"
+   ],
+   "status": "rejected",
+   "reason": "nothing on or beside the cited line says this is an offer acceptance date",
+   "scope": "authorization",
+   "derived_from": null
+  },
+  {
+   "id": 16,
+   "doc": "minutes",
+   "meaning_code": "sale_condition",
+   "meaning": "Terms attached to the accepted offer: no contingencies, quick close",
+   "value": "no contingencies, closing in 30 days or as soon as possible",
+   "quote": "for $390,000.00 with no contingencies and closing in 30 days or as soon as possible",
+   "span_ids": [
+    "minutes:p3:l23",
+    "minutes:p3:l24"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 17,
+   "doc": "minutes",
+   "meaning_code": "seller",
+   "meaning": "Governmental body whose property (old Borough Hall) is being sold, implied seller",
+   "value": "Borough of St. Lawrence",
+   "quote": "BOROUGH OF ST. LAWRENCE",
+   "span_ids": [
+    "minutes:p1:l1"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 18,
+   "doc": "mls-cb",
+   "meaning_code": "sold_price",
+   "meaning": "Final sold price of the property per MLS listing summary",
+   "value": "390000",
+   "quote": "Sold For: $390,000",
+   "span_ids": [
+    "mls-cb:p1:l13"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "transaction",
+   "derived_from": null
+  },
+  {
+   "id": 19,
+   "doc": "mls-cb",
+   "meaning_code": "sale_date",
+   "meaning": "Date the sale closed per MLS price/sales history table",
+   "value": "2025-10-10",
+   "quote": "10/10/2025",
+   "span_ids": [
+    "mls-cb:p3:l21"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "transaction",
+   "derived_from": null
+  },
+  {
+   "id": 20,
+   "doc": "mls-cb",
+   "meaning_code": "sold_price",
+   "meaning": "Sold price listed in MLS price/sales history table",
+   "value": "390000",
+   "quote": "$390,000",
+   "span_ids": [
+    "mls-cb:p3:l31"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "transaction",
+   "derived_from": null
+  },
+  {
+   "id": 21,
+   "doc": "mls-cb",
+   "meaning_code": "listing_date",
+   "meaning": "Original listing date per MLS price/sales history table",
+   "value": "2025-01-10",
+   "quote": "1/10/2025",
+   "span_ids": [
+    "mls-cb:p3:l23"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "listing",
+   "derived_from": null
+  },
+  {
+   "id": 22,
+   "doc": "mls-cb",
+   "meaning_code": "asking_price",
+   "meaning": "Original list (asking) price per MLS history table",
+   "value": "575000",
+   "quote": "$575,000",
+   "span_ids": [
+    "mls-cb:p3:l33"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "listing",
+   "derived_from": null
+  },
+  {
+   "id": 23,
+   "doc": "mls-cb",
+   "meaning_code": "price_change_date",
+   "meaning": "Date the asking price was reduced per MLS history table",
+   "value": "2025-07-15",
+   "quote": "7/15/2025",
+   "span_ids": [
+    "mls-cb:p3:l22"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "listing",
+   "derived_from": null
+  },
+  {
+   "id": 24,
+   "doc": "mls-cb",
+   "meaning_code": "asking_price",
+   "meaning": "Reduced asking price prior to sale per MLS history table",
+   "value": "499000",
+   "quote": "$499,000",
+   "span_ids": [
+    "mls-cb:p3:l32"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "listing",
+   "derived_from": null
+  },
+  {
+   "id": 25,
+   "doc": "mls-cb",
+   "meaning_code": "price_per_sf_reported",
+   "meaning": "Price per square foot as reported by MLS listing",
+   "value": "83.17",
+   "quote": "Price Per Sq. Ft.: $83.17",
+   "span_ids": [
+    "mls-cb:p2:l4"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "listing",
+   "derived_from": null
+  },
+  {
+   "id": 26,
+   "doc": "mls-cb",
+   "meaning_code": "lot_area",
+   "meaning": "Lot size in acres per assessor source",
+   "value": "0.31",
+   "quote": "Lot Size (Acres): 0.31",
+   "span_ids": [
+    "mls-cb:p1:l27"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 27,
+   "doc": "mls-cb",
+   "meaning_code": "lot_area",
+   "meaning": "Lot size in square feet per assessor source",
+   "value": "13503",
+   "quote": "Lot Size (Sq. Ft.): 13,503",
+   "span_ids": [
+    "mls-cb:p1:l28"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 28,
+   "doc": "mls-cb",
+   "meaning_code": "year_built",
+   "meaning": "Estimated year the building was constructed",
+   "value": "1900",
+   "quote": "Year Built: 1900",
+   "span_ids": [
+    "mls-cb:p2:l39"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 29,
+   "doc": "mls-cb",
+   "meaning_code": "stories",
+   "meaning": "Number of stories/levels in the building",
+   "value": "2",
+   "quote": "Stories/Levels: 2",
+   "span_ids": [
+    "mls-cb:p2:l38"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 30,
+   "doc": "mls-cb",
+   "meaning_code": "zoning",
+   "meaning": "Zoning designation reported for the property",
+   "value": "BC AND R-6",
+   "quote": "Zoning: BC AND R-6",
+   "span_ids": [
+    "mls-cb:p1:l41"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 31,
+   "doc": "mls-cb",
+   "meaning_code": "parcel_or_lot_id",
+   "meaning": "Lot number identifying the parcel",
+   "value": "5915",
+   "quote": "Lot Number: 5915",
+   "span_ids": [
+    "mls-cb:p2:l20"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 32,
+   "doc": "mls-cb",
+   "meaning_code": "property_rights",
+   "meaning": "Type of ownership interest conveyed",
+   "value": "Fee Simple",
+   "quote": "Ownership: Fee Simple",
+   "span_ids": [
+    "mls-cb:p2:l16"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 33,
+   "doc": "mls-cb",
+   "meaning_code": "exclusion",
+   "meaning": "Items excluded from the sale of the property",
+   "value": "Furniture, Fixtures, Equipment and Inventory of Seller",
+   "quote": "Exclusions: Furniture, Fixtures, Equipment and Inventory of Seller",
+   "span_ids": [
+    "mls-cb:p2:l18"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 34,
+   "doc": "mls-cb",
+   "meaning_code": "parking",
+   "meaning": "Total off-street parking spaces included with the sale",
+   "value": "21",
+   "quote": "Total Spaces: 21",
+   "span_ids": [
+    "mls-cb:p2:l3"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 35,
+   "doc": "mls-cb",
+   "meaning_code": "listing_broker",
+   "meaning": "Broker/agent who listed the property for sale",
+   "value": "RE/MAX Of Reading, Randy L Weidner",
+   "quote": "Listed by RE/MAX Of Reading, Randy L Weidner",
+   "span_ids": [
+    "mls-cb:p2:l42"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "listing",
+   "derived_from": null
+  },
+  {
+   "id": 36,
+   "doc": "mls-cb",
+   "meaning_code": "selling_broker",
+   "meaning": "Broker/agents credited with the sale (buyer side)",
+   "value": "Atlas Land and Homes, Israel Gonzalez and Marcus Gonzalez",
+   "quote": "Sold by Atlas Land and Homes, Israel Gonzalez and Atlas Land and Homes, Marcus Gonzalez",
+   "span_ids": [
+    "mls-cb:p2:l43"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "listing",
+   "derived_from": null
+  },
+  {
+   "id": 37,
+   "doc": "mls-cb",
+   "meaning_code": "address",
+   "meaning": "Property address as listed in MLS",
+   "value": "3540 St Lawrence Ave Reading, PA 19606",
+   "quote": "3540 St Lawrence Ave Reading, PA 19606",
+   "span_ids": [
+    "mls-cb:p1:l3"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 38,
+   "doc": "mls-cb",
+   "meaning_code": "sale_condition",
+   "meaning": "Description noting sale includes an additional rear land parcel providing parking",
+   "value": "sale includes additional land parcel in rear providing paved parking, total 21 spaces",
+   "quote": "The sale includes the additional land parcel in the rear that\nprovides additional paved parking, bringing the off-street parking to a total of 21 spaces.",
+   "span_ids": [
+    "mls-cb:p1:l9",
+    "mls-cb:p1:l10"
+   ],
+   "status": "rejected",
+   "reason": "the value adds words the quote does not contain: providing",
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 39,
+   "doc": "mls-cb",
+   "meaning_code": "other",
+   "meaning": "MLS listing identifier for the property",
+   "value": "PABK2052516",
+   "quote": "MLS ID: PABK2052516",
+   "span_ids": [
+    "mls-cb:p1:l18"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 40,
+   "doc": "mls-coalition",
+   "meaning_code": "sold_price",
+   "meaning": "Sold price shown on real estate portal listing",
+   "value": "390000",
+   "quote": "$390,000",
+   "span_ids": [
+    "mls-coalition:p1:l6"
+   ],
+   "status": "rejected",
+   "reason": "nothing on or beside the cited line says this is a sold price",
+   "scope": "transaction",
+   "derived_from": null
+  },
+  {
+   "id": 41,
+   "doc": "mls-coalition",
+   "meaning_code": "gross_building_area",
+   "meaning": "Building square footage reported alongside acreage on listing summary",
+   "value": "6000",
+   "quote": "6,000",
+   "span_ids": [
+    "mls-coalition:p1:l8"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 42,
+   "doc": "mls-coalition",
+   "meaning_code": "lot_area",
+   "meaning": "Lot acreage reported on listing summary",
+   "value": "0.31",
+   "quote": "0.31",
+   "span_ids": [
+    "mls-coalition:p1:l9"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 43,
+   "doc": "mls-coalition",
+   "meaning_code": "sale_condition",
+   "meaning": "Status of the listing indicating the transaction is closed, with days on site",
+   "value": "CLOSED, 628 days on site",
+   "quote": "Status: CLOSED | Days on site: 628",
+   "span_ids": [
+    "mls-coalition:p1:l14"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 44,
+   "doc": "mls-coalition",
+   "meaning_code": "zoning",
+   "meaning": "Zoning split between front (Borough Center) and rear (R-6 Urban Residential) parcels",
+   "value": "Front Parcel is Borough Center and the rear parcel is R-6 Urban Residential",
+   "quote": "Zoning: Front Parcel is Borough Center and the rear parcel is R-6 Urban\nResidential",
+   "span_ids": [
+    "mls-coalition:p3:l32",
+    "mls-coalition:p3:l33"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 45,
+   "doc": "mls-coalition",
+   "meaning_code": "lot_area",
+   "meaning": "Lot/acreage figure listed under highlights",
+   "value": "0.31",
+   "quote": "0.31",
+   "span_ids": [
+    "mls-coalition:p3:l7"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 46,
+   "doc": "mls-coalition",
+   "meaning_code": "year_built",
+   "meaning": "Year built listed under property highlights",
+   "value": "1900",
+   "quote": "1900",
+   "span_ids": [
+    "mls-coalition:p3:l9"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 47,
+   "doc": "mls-coalition",
+   "meaning_code": "listing_broker",
+   "meaning": "Listing agent and brokerage per portal listing",
+   "value": "Randy L Weidner, RE/MAX Of Reading",
+   "quote": "Randy L Weidner\nRE/MAX Of Reading , 6106702770.",
+   "span_ids": [
+    "mls-coalition:p3:l2",
+    "mls-coalition:p3:l3"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "listing",
+   "derived_from": null
+  },
+  {
+   "id": 48,
+   "doc": "mls-coalition",
+   "meaning_code": "address",
+   "meaning": "Property address as shown on real estate portal",
+   "value": "3540 Saint Lawrence Ave, Reading, PA 19606",
+   "quote": "3540 Saint Lawrence Ave, Reading, PA 19606",
+   "span_ids": [
+    "mls-coalition:p1:l5"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 49,
+   "doc": "mls-coalition",
+   "meaning_code": "other",
+   "meaning": "Listing ID matching MLS number",
+   "value": "PABK2052516",
+   "quote": "PABK2052516",
+   "span_ids": [
+    "mls-coalition:p3:l17"
+   ],
+   "status": "verified",
+   "reason": null,
+   "scope": "property",
+   "derived_from": null
+  },
+  {
+   "id": 50,
+   "doc": "mls-coalition",
+   "meaning_code": "parking",
+   "meaning": "Parking features/types available at the property",
+   "value": "Lighted Parking, Paved Parking, Parking Lot, 4+ Spaces, 3+ Spaces, 2+ Spaces, 1+ Spaces",
+   "quote": "Parking Features: Lighted Parking,Paved Parking,Parking Lot,4+ Spaces,3+ Spaces,2+\nSpaces,1+ Spaces",
+   "span_ids": [
+    "mls-coalition:p4:l1",
+    "mls-coalition:p4:l2"
+   ],
+   "status": "rejected",
+   "reason": "value 'Lighted Parking, Paved Parking, Parking Lot, 4+ Spaces, 3+ Spaces, 2+ Spaces, 1+ Spaces' is not a number",
+   "scope": "property",
+   "derived_from": null
+  }
+ ],
+ "acceptance": {
+  "part_diff": {
+   "parts": [
+    {
+     "part": "[Content_Types].xml",
+     "before": "283023f8a11cf65023f0091e8368cf5e0edfccbf8178a57f284ab8c0007bca2c",
+     "after": "283023f8a11cf65023f0091e8368cf5e0edfccbf8178a57f284ab8c0007bca2c",
+     "identical": true
+    },
+    {
+     "part": "_rels/.rels",
+     "before": "1285b20099c64699001f9d90ea040ca1c177fa99bc3ae8a841128874820f01a4",
+     "after": "1285b20099c64699001f9d90ea040ca1c177fa99bc3ae8a841128874820f01a4",
+     "identical": true
+    },
+    {
+     "part": "docProps/app.xml",
+     "before": "b3a8955f1648961939fccdf76bbb3c9f8ecbeb610f1e40a5787bfa7aa9427c8f",
+     "after": "b3a8955f1648961939fccdf76bbb3c9f8ecbeb610f1e40a5787bfa7aa9427c8f",
+     "identical": true
+    },
+    {
+     "part": "docProps/core.xml",
+     "before": "24926172a418b86795e646d3abef511f046d599123f33fa87b496d0bab825df2",
+     "after": "24926172a418b86795e646d3abef511f046d599123f33fa87b496d0bab825df2",
+     "identical": true
+    },
+    {
+     "part": "xl/_rels/workbook.xml.rels",
+     "before": "d160f6dcd672f894ae94e9b301b3b541cd3dccbd2279d7ed500e46ce47e4b814",
+     "after": "d160f6dcd672f894ae94e9b301b3b541cd3dccbd2279d7ed500e46ce47e4b814",
+     "identical": true
+    },
+    {
+     "part": "xl/sharedStrings.xml",
+     "before": "ed1136d2f8b95b1121489b2ad88e40d479b4a3fa8d3d731e4d5f5c22c183c301",
+     "after": "ed1136d2f8b95b1121489b2ad88e40d479b4a3fa8d3d731e4d5f5c22c183c301",
+     "identical": true
+    },
+    {
+     "part": "xl/styles.xml",
+     "before": "3772984507252a1d0cadb5022c15060def61cdd93a3f8ed253421b26130ae11e",
+     "after": "3772984507252a1d0cadb5022c15060def61cdd93a3f8ed253421b26130ae11e",
+     "identical": true
+    },
+    {
+     "part": "xl/theme/theme1.xml",
+     "before": "75104b2164c20dab2578383d827deac3a7eec077c3f7c99a4099a551fdebb134",
+     "after": "75104b2164c20dab2578383d827deac3a7eec077c3f7c99a4099a551fdebb134",
+     "identical": true
+    },
+    {
+     "part": "xl/workbook.xml",
+     "before": "393ac60838f55995a5fc6dae03d2919fc810e872ae7f95f34972c7c9990b8833",
+     "after": "393ac60838f55995a5fc6dae03d2919fc810e872ae7f95f34972c7c9990b8833",
+     "identical": true
+    },
+    {
+     "part": "xl/worksheets/sheet1.xml",
+     "before": "c6bb8d8ffdf1389e9da30256e6a53d16f37340cf0ce7531e51f6be975661df4d",
+     "after": "69884a59526db1280cdde502d0f0f78f79a0cc74145e73d6c3f3af2e8c433f37",
+     "identical": false
+    },
+    {
+     "part": "xl/worksheets/sheet2.xml",
+     "before": "b36c125e1177221dc21439cd8c64c4d4c2d40252fd46d923a54202a1ee544537",
+     "after": "b36c125e1177221dc21439cd8c64c4d4c2d40252fd46d923a54202a1ee544537",
+     "identical": true
+    }
+   ],
+   "changed_cells": [
+    "D5",
+    "D6",
+    "D7",
+    "D8",
+    "D9",
+    "D10",
+    "D11",
+    "D12",
+    "D13",
+    "D14",
+    "D15",
+    "D16",
+    "D17"
+   ],
+   "problems": [],
+   "ok": true
+  },
+  "manifest": {
+   "before": {
+    "protected_sha256": "bec2b6f5c51152bbd24edced4f3ae8c76ba1ce0760ff3f26e0ce6bd65b37c5a3",
+    "formulas_and_names_sha256": "6779a0c154c207a5b3ce18546826251d38564f0be6508333259b659fa61ef608",
+    "counts": {
+     "formulas": 36,
+     "defined_names": 3,
+     "conditional_formats": 1,
+     "data_validations": 18,
+     "constants": 58,
+     "hidden_sheets": 1
+    }
+   },
+   "after": {
+    "protected_sha256": "bec2b6f5c51152bbd24edced4f3ae8c76ba1ce0760ff3f26e0ce6bd65b37c5a3",
+    "formulas_and_names_sha256": "6779a0c154c207a5b3ce18546826251d38564f0be6508333259b659fa61ef608",
+    "counts": {
+     "formulas": 36,
+     "defined_names": 3,
+     "conditional_formats": 1,
+     "data_validations": 18,
+     "constants": 58,
+     "hidden_sheets": 1
+    }
+   },
+   "problems": [],
+   "ok": true
+  }
+ },
+ "tamper_tests": [
+  {
+   "test": "write into a formula cell (D20, price per sq ft)",
+   "expected": "refused",
+   "result": "refused",
+   "detail": "D20 holds a formula; formula cells are never written",
+   "passed": true
+  },
+  {
+   "test": "formula edited by hand (D20 multiplied by 1.1)",
+   "expected": "detected",
+   "result": "detected",
+   "detail": [
+    "/sheets/Sales Comparison/formulas/D20: '=IF(OR(D9=\"\",D10=\"\"),\"\",D9/D10)' -> '=IF(OR(D9=\"\",D10=\"\"),\"\",D9/D10*1.1)'"
+   ],
+   "hash_after": "cc9a903b86733522a0f18f2323a5c950cf7674d749552db655da34b6b869daa6",
+   "passed": true
+  },
+  {
+   "test": "defined name repointed (SqFtPerAcre to Settings!B4), no formula text changed",
+   "expected": "detected",
+   "result": "detected",
+   "detail": [
+    "/defined_names/SqFtPerAcre/refers_to: 'Settings!$B$2' -> 'Settings!$B$4'"
+   ],
+   "hash_after": "d06f88aad6d658e0fc3b3deea077985ce7575c61c0795bb2fa2ea52225e10820",
+   "passed": true
+  },
+  {
+   "test": "protected constant changed (Settings!B2, 43,560 to 43,000), no formula text changed",
+   "expected": "detected",
+   "result": "detected",
+   "detail": [
+    "/sheets/Settings/constants/B2: ['int', '43560'] -> ['int', '43000']"
+   ],
+   "hash_after": "32dbea1d39efe866b41fb72e879d3c52079bfb9da0ca3ac45887a2dbd86495f2",
+   "passed": true
+  }
+ ],
+ "gridmath": {
+  "delivered": {
+   "price_per_sf": 53.03236333967909,
+   "land_to_building": 3.376285014957846,
+   "steps": [],
+   "net_property": null,
+   "adjusted_per_sf": null,
+   "gross_pct": null,
+   "net_pct": null
+  },
+  "test_copy": {
+   "price_per_sf": 53.03236333967909,
+   "land_to_building": 3.376285014957846,
+   "steps": [
+    53.03236333967909,
+    53.03236333967909,
+    55.683981506663045,
+    58.183981506663045,
+    62.83870002719609
+   ],
+   "net_property": 0.07,
+   "adjusted_per_sf": 67.23740902909982,
+   "gross_pct": 0.45744213846153853,
+   "net_pct": 0.2678561692307695
+  }
+ },
+ "excel": {
+  "delivered": {
+   "application": "Microsoft Excel for Mac",
+   "version": "16.113.3",
+   "workbook_sha256": "51ddcb3833fc59dbc11d9e1a3f95e3ceb9054baeb140a9cfb7bf7f39653931fd",
+   "recalculation": "calculate full",
+   "saved": false,
+   "cells": {
+    "Sales Comparison!D9": {
+     "class": "real",
+     "value": 390000.0,
+     "formula": "390000"
+    },
+    "Sales Comparison!D10": {
+     "class": "real",
+     "value": 7354.0,
+     "formula": "7354"
+    },
+    "Sales Comparison!D11": {
+     "class": "real",
+     "value": 0.57,
+     "formula": "0.57"
+    },
+    "Sales Comparison!D20": {
+     "class": "real",
+     "value": 53.032363339679,
+     "formula": "=IF(OR(D9=\"\",D10=\"\"),\"\",D9/D10)"
+    },
+    "Sales Comparison!D21": {
+     "class": "real",
+     "value": 3.376285014958,
+     "formula": "=IF(OR(D11=\"\",D10=\"\"),\"\",D11*SqFtPerAcre/D10)"
+    },
+    "Sales Comparison!D24": {
+     "class": "text",
+     "value": "",
+     "formula": "=IF(OR(D20=\"\",D23=\"\"),\"\",D20*(1+D23))"
+    },
+    "Sales Comparison!D32": {
+     "class": "text",
+     "value": "",
+     "formula": "=IF(OR(D30=\"\",D31=\"\"),\"\",D30*(1+D31))"
+    },
+    "Sales Comparison!D42": {
+     "class": "text",
+     "value": "",
+     "formula": "=IF(COUNTBLANK(D35:D41)>0,\"\",SUM(D35:D41))"
+    },
+    "Sales Comparison!D43": {
+     "class": "text",
+     "value": "",
+     "formula": "=IF(OR(D32=\"\",D42=\"\"),\"\",D32*(1+D42))"
+    },
+    "Sales Comparison!D44": {
+     "class": "text",
+     "value": "",
+     "formula": "=IF(D43=\"\",\"\",(ABS(D23)*D20+ABS(D25)*D24+ABS(D27)*D26+ABS(D29)+ABS(D31)*D30+SUMPRODUCT(ABS(D35:D41))*D32)/D20)"
+    },
+    "Sales Comparison!D45": {
+     "class": "text",
+     "value": "",
+     "formula": "=IF(D43=\"\",\"\",D43/D20-1)"
+    },
+    "Sales Comparison!C49": {
+     "class": "text",
+     "value": "",
+     "formula": "=IF(OR(C48=\"\",C10=\"\"),\"\",ROUND(C48*C10,ValueRounding))"
+    },
+    "Settings!B6": {
+     "class": "real",
+     "value": 13.0,
+     "formula": "=COUNTA('Sales Comparison'!D5:D17)"
+    }
+   }
+  },
+  "test_copy": {
+   "application": "Microsoft Excel for Mac",
+   "version": "16.113.3",
+   "workbook_sha256": "f9eb66874ea4589c6721dd711b0072d909b2c3610dcae4c5abf2586e1fa7328e",
+   "recalculation": "calculate full",
+   "saved": false,
+   "cells": {
+    "Sales Comparison!D9": {
+     "class": "real",
+     "value": 390000.0,
+     "formula": "390000"
+    },
+    "Sales Comparison!D10": {
+     "class": "real",
+     "value": 7354.0,
+     "formula": "7354"
+    },
+    "Sales Comparison!D11": {
+     "class": "real",
+     "value": 0.57,
+     "formula": "0.57"
+    },
+    "Sales Comparison!D20": {
+     "class": "real",
+     "value": 53.032363339679,
+     "formula": "=IF(OR(D9=\"\",D10=\"\"),\"\",D9/D10)"
+    },
+    "Sales Comparison!D21": {
+     "class": "real",
+     "value": 3.376285014958,
+     "formula": "=IF(OR(D11=\"\",D10=\"\"),\"\",D11*SqFtPerAcre/D10)"
+    },
+    "Sales Comparison!D24": {
+     "class": "real",
+     "value": 53.032363339679,
+     "formula": "=IF(OR(D20=\"\",D23=\"\"),\"\",D20*(1+D23))"
+    },
+    "Sales Comparison!D32": {
+     "class": "real",
+     "value": 62.838700027196,
+     "formula": "=IF(OR(D30=\"\",D31=\"\"),\"\",D30*(1+D31))"
+    },
+    "Sales Comparison!D42": {
+     "class": "real",
+     "value": 0.07,
+     "formula": "=IF(COUNTBLANK(D35:D41)>0,\"\",SUM(D35:D41))"
+    },
+    "Sales Comparison!D43": {
+     "class": "real",
+     "value": 67.2374090291,
+     "formula": "=IF(OR(D32=\"\",D42=\"\"),\"\",D32*(1+D42))"
+    },
+    "Sales Comparison!D44": {
+     "class": "real",
+     "value": 0.457442138462,
+     "formula": "=IF(D43=\"\",\"\",(ABS(D23)*D20+ABS(D25)*D24+ABS(D27)*D26+ABS(D29)+ABS(D31)*D30+SUMPRODUCT(ABS(D35:D41))*D32)/D20)"
+    },
+    "Sales Comparison!D45": {
+     "class": "real",
+     "value": 0.267856169231,
+     "formula": "=IF(D43=\"\",\"\",D43/D20-1)"
+    },
+    "Sales Comparison!C49": {
+     "class": "real",
+     "value": 380000.0,
+     "formula": "=IF(OR(C48=\"\",C10=\"\"),\"\",ROUND(C48*C10,ValueRounding))"
+    },
+    "Settings!B6": {
+     "class": "real",
+     "value": 13.0,
+     "formula": "=COUNTA('Sales Comparison'!D5:D17)"
+    }
+   }
+  },
+  "comparison": [
+   {
+    "cell": "D20",
+    "what": "price per sq ft",
+    "excel": 53.032363339679,
+    "python": 53.03236333967909,
+    "agree_to_the_cent": true
+   },
+   {
+    "cell": "D21",
+    "what": "land-to-building ratio",
+    "excel": 3.376285014958,
+    "python": 3.376285014957846,
+    "agree_to_the_cent": true
+   },
+   {
+    "cell": "D43",
+    "what": "adjusted price per sq ft with no adjustments entered",
+    "excel": "",
+    "python": "",
+    "agree_to_the_cent": true
+   },
+   {
+    "cell": "C49",
+    "what": "indicated value with no reconciliation entered",
+    "excel": "",
+    "python": "",
+    "agree_to_the_cent": true
+   },
+   {
+    "cell": "D43 (test copy)",
+    "what": "adjusted price per sq ft, test inputs",
+    "excel": 67.2374090291,
+    "python": 67.23740902909982,
+    "agree_to_the_cent": true
+   },
+   {
+    "cell": "D44 (test copy)",
+    "what": "gross adjustment, test inputs",
+    "excel": 0.457442138462,
+    "python": 0.45744213846153853,
+    "agree_to_the_cent": true
+   },
+   {
+    "cell": "C49 (test copy)",
+    "what": "indicated value, test inputs",
+    "excel": 380000.0,
+    "python": 380000.0,
+    "agree_to_the_cent": true
+   }
+  ],
+  "delivered_file_is_the_recalculated_file": true
+ },
+ "attribution": "Information is based on geospatial data from the County of Berks."
+}

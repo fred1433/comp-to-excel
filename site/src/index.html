@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>One Pennsylvania sale, traced</title>
+<meta name="description" content="A public-data demonstration of controlled sale entry: one recorded Pennsylvania sale, every figure checked against its source line, approved, and written into an Excel comparison grid whose formulas did not change.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: light;
+  --ink: #16243a;
+  --muted: #5b6778;
+  --faint: #8993a1;
+  --line: #d9dfe7;
+  --paper: #ffffff;
+  --sheet: #f6f8fb;
+  --fact: #e9f0f7;
+  --appr: #fff3c4;
+  --stamp: #5a3e8e;
+  --stamp-tint: #f2edf9;
+  --refuse: #a5281c;
+  --refuse-tint: #fbeeec;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: "Public Sans", system-ui, sans-serif; font-size: 16px; line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+a { color: var(--stamp); text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--stamp); outline-offset: 2px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+/* header */
+header.doc { padding: 52px 0 8px; }
+h1 { font-size: clamp(34px, 4.4vw, 48px); line-height: 1.08; letter-spacing: -0.015em; font-weight: 700; margin: 0; }
+.lead { max-width: 70ch; margin: 14px 0 0; font-size: 17px; color: #28364c; }
+.doctype { color: var(--muted); font-size: 14px; margin: 0 0 4px; }
+.sheethead { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 20px; align-items: start; padding: 22px 22px 18px; border-bottom: 2px solid var(--ink); }
+.addr { font-size: 23px; font-weight: 700; line-height: 1.2; margin: 0; letter-spacing: -0.01em; }
+.sub { margin: 4px 0 0; color: var(--muted); font-size: 14.5px; }
+.stamp {
+  border: 2px solid var(--stamp); outline: 1px solid var(--stamp); outline-offset: 2px; color: var(--stamp); border-radius: 2px;
+  padding: 8px 12px; font-size: 12.5px; line-height: 1.35; background: var(--paper); margin: 4px 4px 0 0;
+}
+.stamp strong { display: block; font-size: 14px; white-space: nowrap; }
+.keys { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1.12fr); border-bottom: 1px solid var(--line); }
+.key { text-align: left; background: none; border: 0; border-top: 3px solid transparent; padding: 15px 18px 13px; cursor: pointer; min-width: 0; }
+.key + .key { border-left: 1px solid var(--line); }
+.key:hover { background: #eef2f7; }
+.key[aria-pressed="true"] { background: var(--stamp-tint); border-top-color: var(--stamp); }
+.key .lab { display: block; color: var(--muted); font-size: 13.5px; }
+.key .big { display: block; font-size: clamp(19px, 1.65vw, 23px); white-space: nowrap; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; margin: 2px 0; }
+.key .src { font-size: 12.5px; color: var(--faint); }
+.key .src b { color: var(--stamp); font-weight: 600; }
+/* sheet + evidence */
+.desk { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 40px; padding-top: 30px; padding-bottom: 64px; align-items: start; }
+.sheet { background: var(--sheet); border: 1px solid #c8d0db; border-radius: 3px; }
+#sheet { padding: 4px 0 8px; }
+.row {
+  display: grid; grid-template-columns: 170px minmax(0, 1fr) auto; gap: 16px; align-items: baseline; width: 100%;
+  text-align: left; background: none; border: 0; border-left: 3px solid transparent; padding: 11px 20px 11px 17px; cursor: pointer;
+}
+.row + .row { border-top: 1px solid #e6eaf0; }
+.row:hover { background: #eef2f7; }
+.row[aria-pressed="true"] { background: var(--stamp-tint); border-left-color: var(--stamp); }
+.row .lab { color: var(--muted); font-size: 14px; }
+.row .val { font-size: 17px; white-space: pre-line; }
+.row.long .val { font-size: 15px; line-height: 1.5; }
+.row .src { font-size: 12.5px; color: var(--faint); white-space: nowrap; }
+.row .src b { color: var(--stamp); font-weight: 600; }
+.row .flag { display: block; font-size: 13px; color: #7a5a00; margin-top: 3px; }
+.calc { margin: 18px 0 0; padding: 14px 20px; border: 1px dashed var(--line); border-radius: 4px; font-size: 15px; color: #28364c; }
+.calc b { font-weight: 600; }
+.held { margin-top: 28px; }
+.held h3, .panel h3 { font-size: 15px; font-weight: 600; margin: 0 0 10px; }
+.held ul { list-style: none; margin: 0; padding: 0; }
+.held li button {
+  width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid var(--line); padding: 10px 0; cursor: pointer;
+  display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px;
+}
+.held li button[aria-pressed="true"] .q { color: var(--refuse); }
+.held .q { font-size: 15px; }
+.held .why { font-size: 13.5px; color: var(--muted); }
+
+.panel { position: sticky; top: 16px; max-height: calc(100vh - 32px); overflow-y: auto; padding-right: 6px; }
+.panel .cap { font-size: 14px; color: var(--muted); margin: 0; }
+.panel h2 { font-size: 26px; line-height: 1.2; margin: 2px 0 6px; font-weight: 700; letter-spacing: -0.01em; }
+.panel .rule { font-size: 14.5px; color: #28364c; margin: 0 0 18px; }
+.ev { border-top: 1px solid var(--line); padding: 16px 0; }
+.ev .who { font-weight: 600; font-size: 15px; }
+.ev .kind { font-size: 13px; color: var(--muted); }
+.ev img { display: block; width: 100%; height: auto; border: 1px solid var(--line); margin: 10px 0 6px; background: #fff; }
+.ev blockquote { margin: 10px 0 6px; padding: 10px 14px; background: var(--fact); border-radius: 3px; font-size: 15px; }
+.ev.conflict blockquote { background: var(--appr); }
+.ev.rejected blockquote { background: var(--refuse-tint); }
+.ev .check { font-size: 13.5px; color: var(--muted); }
+.ev .check.ok::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #3d7a4f; margin-right: 7px; vertical-align: 1px; }
+.ev .check.no { color: var(--refuse); }
+.cellmap { margin: 0 0 8px; }
+.cellmap .cap { margin-bottom: 4px; }
+.cellmap table { width: 100%; border-collapse: collapse; font-size: 12.5px; table-layout: fixed; }
+.cellmap th, .cellmap td { border: 1px solid #cfd6df; padding: 4px 7px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cellmap th { background: #eef1f5; color: var(--muted); font-weight: 500; text-align: center; }
+.cellmap th.rn { width: 34px; }
+.cellmap td.b { width: 52%; color: var(--muted); }
+.cellmap td.fact { background: var(--fact); }
+.cellmap td.appr { background: var(--appr); }
+.cellmap td.hit { outline: 2px solid var(--stamp); outline-offset: -2px; font-weight: 600; }
+
+/* run */
+section.run { border-top: 1px solid var(--line); padding: 56px 0; }
+section.run h2, section.notes h2 { font-size: 28px; letter-spacing: -0.01em; margin: 0 0 8px; }
+.intro { color: #28364c; max-width: 66ch; margin: 0 0 28px; }
+ol.seq { list-style: none; counter-reset: s; margin: 0; padding: 0; max-width: 900px; }
+ol.seq li { counter-increment: s; display: grid; grid-template-columns: 34px 112px minmax(0, 1fr); gap: 14px; padding: 13px 0; border-top: 1px solid var(--line); }
+ol.seq li::before { content: counter(s); color: var(--faint); font-size: 14px; padding-top: 2px; }
+.out { font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 3px; height: fit-content; text-align: center; border: 1px solid var(--line); color: var(--ink); }
+.out.refused, .out.detected { color: var(--refuse); border-color: #e7b9b3; background: var(--refuse-tint); }
+.out.approved { color: var(--stamp); border-color: #cdbfe3; background: var(--stamp-tint); }
+.seq .what { font-size: 15.5px; }
+.seq .det { display: block; font-size: 13.5px; color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
+.proof { margin-top: 40px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; max-width: 1000px; }
+.proof h3 { font-size: 17px; margin: 0 0 8px; }
+.proof p { margin: 0 0 10px; font-size: 15px; color: #28364c; }
+.hash { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 4px 12px; font-size: 13.5px; margin: 10px 0; }
+.hash span { color: var(--muted); }
+.hash code { font-family: inherit; overflow-wrap: anywhere; }
+.files { list-style: none; padding: 0; margin: 0; font-size: 14.5px; }
+.files li { padding: 8px 0; border-top: 1px solid var(--line); }
+.files small { display: block; color: var(--muted); font-size: 12.5px; overflow-wrap: anywhere; }
+
+section.notes { border-top: 1px solid var(--line); padding: 56px 0 64px; }
+.notes ul { max-width: 70ch; padding-left: 20px; margin: 12px 0 24px; color: #28364c; }
+.notes li { margin: 6px 0; }
+.next { font-size: 18px; max-width: 60ch; margin: 0; }
+footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--muted); font-size: 13.5px; }
+footer p { margin: 4px 0; }
+
+@media (max-width: 900px) {
+  .wrap { padding: 0 16px; }
+  header.doc { padding-top: 32px; }
+  .sheethead { grid-template-columns: 1fr; padding: 16px 14px; }
+  .stamp { justify-self: start; }
+  .key { padding: 11px 10px 10px; }
+  .key .lab { font-size: 12px; }
+  .key .big { font-size: 15.5px; }
+  .key .src { font-size: 11.5px; }
+  .desk { grid-template-columns: 1fr; gap: 0; padding-top: 20px; }
+  .panel { max-height: none; overflow: visible; }
+  .panel > .cap:first-child, .panel > h2 { display: none; }
+  .row { grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 12px 14px 12px 13px; }
+  .row .lab { grid-column: 1 / -1; }
+  .panel { position: static; background: var(--paper); border: 1px solid #cdbfe3; border-top: 0; padding: 14px 14px 4px; }
+  .panel h2 { font-size: 22px; }
+  .proof { grid-template-columns: 1fr; }
+  ol.seq li { grid-template-columns: 26px minmax(0, 1fr); }
+  ol.seq li .out { grid-column: 2; justify-self: start; }
+  ol.seq li .what { grid-column: 2; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .panel.swap { animation: settle .28s ease-out; }
+  @keyframes settle { from { opacity: .35; } to { opacity: 1; } }
+}
+</style>
+</head>
+<body>
+<header class="doc">
+  <div class="wrap">
+    <h1>One Pennsylvania sale, traced</h1>
+    <p class="lead">A public-data demonstration of controlled sale entry. Each figure was read from public documents, checked by code against the line it came from, approved, and written into an Excel comparison grid without touching a formula. Select a figure to see where it came from.</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap desk">
+    <div>
+      <div class="sheet">
+        <div class="sheethead">
+          <div>
+            <p class="doctype">Comparable sale 1, data sheet</p>
+            <p class="addr">3540 St. Lawrence Ave, Reading, PA 19606</p>
+            <p class="sub">St. Lawrence Borough, Berks County</p>
+          </div>
+          <div class="stamp"><strong>Approved for demo entry</strong>Appraiser verification pending</div>
+        </div>
+        <div class="keys" id="keys"></div>
+        <div id="sheet" role="group" aria-label="Sale facts"></div>
+      </div>
+      <p class="calc" id="calc"></p>
+      <div class="held">
+        <h3>Held back by the checks</h3>
+        <ul id="held"></ul>
+      </div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <section class="run">
+    <div class="wrap">
+      <h2>What ran, in order</h2>
+      <p class="intro">One recorded run against a real PostgreSQL database, with an application role for each job: reading, reviewing, writing. The model was called once; the run replays its recorded answer.</p>
+      <ol class="seq" id="seq"></ol>
+      <div class="proof">
+        <div>
+          <h3>The workbook, before and after</h3>
+          <p id="parts"></p>
+          <p>Fingerprint of every formula, defined name, conditional format, validation rule, calculation setting, style and constant outside the input cells:</p>
+          <div class="hash" id="hash"></div>
+          <p id="excel"></p>
+        </div>
+        <div>
+          <h3>Files</h3>
+          <ul class="files" id="files"></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="notes">
+    <div class="wrap">
+      <h2>Not shown here</h2>
+      <ul>
+        <li>Local-source demonstration; Microsoft tenant integration not demonstrated. The documents were read from a local folder.</li>
+        <li>Excel for Mac, not desktop Excel on a Windows 365 runner. The copy on this machine is not activated, so it recalculated the file and could not save it; the delivered file is the written file, with the same hash as the one Excel recalculated.</li>
+        <li>No party to the sale was contacted. The deed image was not retrieved; the instrument number comes from the county assessment record.</li>
+        <li>The grid is ours, built to stand in for a firm's model. Its adjustment convention is one of several in use.</li>
+        <li>Word reports, a review queue and multi-agent quality control are left out.</li>
+      </ul>
+      <p class="next">Next step: establish whether this controlled entry pattern fits your workbook, and define the template-mapping and acceptance work for discovery.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Built by Frederic de Lavenne de Choulot, The AI Pipe. Code and recorded run: <a href="https://github.com/fred1433/comp-to-excel">github.com/fred1433/comp-to-excel</a></p>
+    <p id="attr"></p>
+  </div>
+</footer>
+
+<script>
+const D = /*DATA*/null;
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const narrow = matchMedia("(max-width: 900px)");
+const short = (h) => h.slice(0, 12) + "…" + h.slice(-6);
+
+function lines(spans) {
+  const n = spans.map((s) => +s.split(":l")[1]);
+  return n.length === 1 ? "line " + n[0] : "lines " + n[0] + " to " + n[n.length - 1];
+}
+const num = (v) => (/^\d+(\.\d+)?$/.test(v) && v.length > 3 && !/^(19|20)\d\d$/.test(v) && v.length < 9 ? Number(v).toLocaleString("en-US") : v);
+
+function sourceLine(e) {
+  const doc = D.docs[e.doc];
+  const where = e.doc === "county" ? "field " + e.spans[0].split(":").slice(2).join(":") :
+    (e.page ? "page " + e.page + ", " + lines(e.spans) : "");
+  return { name: doc.name, kind: doc.kind + (where ? ", " + where : "") };
+}
+
+function evidenceHTML(e) {
+  const s = sourceLine(e);
+  const cls = e.status === "rejected" ? "rejected" : (e.role === "conflict" ? "conflict" : "");
+  let check;
+  if (e.status === "rejected") check = `<p class="check no">Held back: ${esc(e.reason)}.</p>`;
+  else if (e.derived) check = `<p class="check ok">Checked: ${e.derived.operands.map((n) => n.toLocaleString("en-US")).join(" + ")} = ${Number(e.value).toLocaleString("en-US")}, each on the record.</p>`;
+  else check = `<p class="check ok">Checked: quote found on the cited line; value ${esc(num(e.value))} is what it says.</p>`;
+  const lead = e.role === "conflict" ? `<p class="kind">Another source says otherwise:</p>` : "";
+  const media = e.img ? `<img src="${e.img}" alt="Scanned minutes, page ${e.page}, with the cited lines highlighted">` : "";
+  return `<div class="ev ${cls}">${lead}<div class="who">${esc(s.name)}</div><div class="kind">${esc(s.kind)}</div>${media}${e.img ? `<p class="kind">OCR text of the highlighted lines:</p>` : ""}<blockquote>${esc(e.quote)}</blockquote>${check}</div>`;
+}
+
+function cellmapHTML(cell) {
+  const row = +cell.slice(1);
+  const rows = D.grid.filter((g) => g.row <= 17 || g.row === 20 || g.row === 21);
+  const i = rows.findIndex((g) => g.row === row);
+  const start = Math.min(Math.max(0, i - 1), rows.length - 3);
+  const win = rows.slice(start, start + 3);
+  return `<div class="cellmap"><p class="cap">Written to Sales Comparison!${cell}</p><table>
+    <thead><tr><th class="rn"></th><th>B</th><th>D, Comparable 1</th></tr></thead><tbody>${
+    win.map((g) => `<tr><th class="rn">${g.row}</th><td class="b">${esc(g.label)}</td><td class="${g.kind === "fact" ? "fact" : ""}${g.row === row ? " hit" : ""}">${esc(g.value)}</td></tr>`).join("")
+  }</tbody></table></div>`;
+}
+
+const rank = (e) => (e.role === "conflict" ? 9 : e.img ? 0 : e.doc === "county" ? 1 : 2);
+
+function show(kind, idx, btn) {
+  document.querySelectorAll("[aria-pressed]").forEach((b) => b.setAttribute("aria-pressed", "false"));
+  btn.setAttribute("aria-pressed", "true");
+  const p = $("#panel");
+  if (kind === "row") {
+    const f = D.sheet[idx];
+    p.innerHTML = `<p class="cap">${esc(f.label)}</p><h2>${esc(f.display.split("\n")[0])}${f.display.includes("\n") ? " and 1 more" : ""}</h2>
+      <p class="rule">Rule applied: ${esc(f.rule)}.</p>
+      ${cellmapHTML(f.cell)}
+      ${f.evidence.length ? [...f.evidence].sort((a, b) => rank(a) - rank(b)).map(evidenceHTML).join("") : `<div class="ev"><p class="check">Written by the entry rule, from no single document.</p></div>`}`;
+  } else {
+    const e = D.held[idx];
+    p.innerHTML = `<p class="cap">Held back, not written</p><h2>${esc(e.value)}</h2>
+      <p class="rule">Offered by the model as: ${esc(e.meaning)}. It stays pending until someone resolves it.</p>${evidenceHTML(e)}`;
+  }
+  if (narrow.matches) (btn.classList.contains("key") ? $("#keys") : btn).after(p);
+  else if (p.parentElement !== $(".desk")) $(".desk").appendChild(p);
+  p.classList.remove("swap"); void p.offsetWidth; p.classList.add("swap");
+}
+
+function renderSheet() {
+  const srcs = (f) => { const n = f.evidence.filter((e) => e.role !== "conflict").length; return n ? `<b>${n}</b> source${n > 1 ? "s" : ""}` : "rule"; };
+  $("#keys").innerHTML = D.sheet.slice(0, 3).map((f, i) => `<button class="key" data-i="${i}" aria-pressed="false"><span class="lab">${esc(f.label)}</span><span class="big">${esc(f.display)}</span><span class="src">${srcs(f)}, ${f.cell}</span></button>`).join("");
+  document.querySelectorAll("#keys .key").forEach((b) => b.addEventListener("click", () => show("row", +b.dataset.i, b)));
+  $("#sheet").innerHTML = D.sheet.map((f, i) => {
+    if (i < 3) return "";
+    const n = f.evidence.filter((e) => e.role !== "conflict").length;
+    const long = f.key === "sale_conditions" || f.key === "verification" || f.key === "address";
+    return `<button class="row${long ? " long" : ""}" data-i="${i}" aria-pressed="false">
+      <span class="lab">${esc(f.label)}</span>
+      <span class="val">${esc(f.display)}${f.conflict ? `<span class="flag">Conflict: ${esc(f.conflict)}.</span>` : ""}</span>
+      <span class="src">${n ? `<b>${n}</b> source${n > 1 ? "s" : ""}` : "rule"}, ${f.cell}</span></button>`;
+  }).join("");
+  document.querySelectorAll("#sheet .row").forEach((b) => b.addEventListener("click", () => show("row", +b.dataset.i, b)));
+  const pp = D.price_per_sf;
+  $("#calc").innerHTML = `Calculated by the workbook, not entered: <b>$${pp.value.toFixed(2)} per sq ft</b> = $${pp.price.toLocaleString("en-US")} ÷ ${pp.gba.toLocaleString("en-US")} sq ft, cell D20, recalculated by Excel. The listing's own $83.17 per sq ft is ${esc(D.notes.mls_price_per_sf.reading.split(":")[0])}: the reduced asking price over 6,000 sq ft, not a sale unit price.`;
+  $("#held").innerHTML = D.held.map((e, i) => `<li><button data-i="${i}" aria-pressed="false"><span class="q">“${esc(e.quote.length > 70 ? e.quote.slice(0, 68) + "…" : e.quote)}”</span><span class="why">${esc(D.docs[e.doc].name)}: ${esc(e.reason)}.</span></button></li>`).join("");
+  document.querySelectorAll("#held button").forEach((b) => b.addEventListener("click", () => show("held", +b.dataset.i, b)));
+}
+
+function tidy(p) {
+  return p.replace(/^\/sheets\/[^/]+\/formulas\/(\w+): '(.*)' -> '(.*)'$/, "Formula $1 became $3.")
+    .replace(/^\/defined_names\/(\w+)\/refers_to: '(.*)' -> '(.*)'$/, "Name $1 now points to $3.")
+    .replace(/^\/sheets\/(\w+)\/constants\/(\w+): \['\w+', '(.*)'\] -> \['\w+', '(.*)'\]$/, "Constant $1!$2 changed from $3 to $4.");
+}
+
+function renderRun() {
+  const S = D.steps, by = (o, doc) => S.find((s) => s.outcome === o && (!doc || s.doc === doc));
+  const chk = S.find((s) => s.step === "check_facts");
+  const w = S.filter((s) => s.step === "write");
+  const t = D.tamper;
+  const items = [
+    ["read", "", `Four documents read into staging, each with its SHA-256 and page text layer. The same listing file dropped in a second time was recognized by its hash and ignored.`, `county record, council minutes (scanned, OCR), two listing pages`],
+    ["checked", "", `${chk.verified + chk.rejected} facts proposed: ${D.model.name.replace("claude-sonnet-5", "Claude Sonnet 5")} read the three PDFs in one call (${D.model.in.toLocaleString("en-US")} tokens in), the county record was mapped field by field. Code verified ${chk.verified} against their cited lines and held back ${chk.rejected}.`, `Each quote must appear on the line it cites, the line must say what the value means, and the value must be what the quote says.`],
+    ["matched", "", `The recorded instrument ${by("transaction_created_from_recorded_instrument").instrument_no} created the sale, covering two parcels. A second row on the same instrument was refused by the database.`, by("refused_by_database").error],
+    ["kept apart", "", `The parcel's ${by("resale_kept_apart").sale_period} sale at $${Number(by("resale_kept_apart").price).toLocaleString("en-US")} became its own transaction on the same property, not a duplicate.`, ""],
+    ["matched", "", `The MLS record joined the sale: same date, same price, same address, lot number matching the parcel id.`, `No instrument number on the listing, so the match rests on those four facts.`],
+    ["held", "", `The council vote was held for review: an authorization, not a closing, 29 days before the recorded sale. The reviewer then linked it as the authorization that preceded the sale.`, ""],
+    ["refused", "refused", `Write before approval.`, w[0].reason],
+    ["approved", "approved", `Approved for demo entry by the demo operator, bound to one version of the record, its evidence, the input map, the template and the destination cells.`, `Version ${short(by("approved_for_demo_entry").version_sha256)}. Appraiser verification stays pending.`],
+    ["refused", "refused", `Building area changed to 6,000 sq ft after approval, then a write attempted.`, w[1].reason],
+    ["resumed", "", `The worker stopped after saving the workbook and before recording completion. The next run found the saved file, recognized its hash, verified it and finished without writing again.`, `A third run of the same approval did nothing: one completed write per approval.`],
+    ["detected", "detected", `Tampering on copies of the delivered file: ${t.slice(1).map((x) => x.test.split(" (")[0]).join("; ")}. Each was detected. Writing into a formula cell was refused.`, t.slice(1).map((x) => tidy(x.detail[0])).join(" ")],
+    ["recalculated", "", `Excel for Mac ${D.excel.version} opened this exact file and recalculated it in full. Price per sq ft agrees to the cent with an independent recomputation; adjusted lines with no adjustments entered stay blank, not zero.`, `Formulas checked on a separate test copy with typed test inputs: ${D.excel.comparison.filter((c) => c.cell.includes("test")).every((c) => c.agree_to_the_cent) ? "all agree to the cent" : "disagreement"}.`],
+    ["audited", "", `${D.audit.rows} audit events, each chained to the previous one by hash. Update, delete and truncate were refused for all three application roles.`, `Append-only for the tested application roles. An edit made with owner rights still shows: the chain breaks at row ${D.audit.owner_edit.join(", ")}.`],
+  ];
+  $("#seq").innerHTML = items.map(([o, c, what, det]) => `<li><span class="out ${c}">${esc(o[0].toUpperCase() + o.slice(1))}</span><span class="what">${esc(what)}${det ? `<span class="det">${esc(det)}</span>` : ""}</span></li>`).join("");
+
+  const h = D.hashes;
+  $("#parts").textContent = `${h.parts_changed.length} of ${h.parts} package parts changed: the grid sheet. Inside it, ${h.cells_changed.length} cells changed (${h.cells_changed[0]} to ${h.cells_changed[h.cells_changed.length - 1]}), all approved inputs. ${h.counts.formulas} formulas, ${h.counts.defined_names} defined names and ${h.counts.data_validations} validation rules, one hidden sheet.`;
+  $("#hash").innerHTML = `<span>Before</span><code>${h.before}</code><span>After</span><code>${h.after}</code>`;
+  $("#excel").textContent = D.excel.same_file ? `Excel recalculated the file with SHA-256 ${short(D.excel.sha)}, the delivered file.` : "";
+  const F = D.files;
+  $("#files").innerHTML = [
+    ["template.xlsx", "The grid as built, never modified", F.template.sha256],
+    ["comparable-1-entered.xlsx", "Delivered: the template with the approved sale written into column D", F.delivered.sha256],
+    ["formula-check-test-inputs.xlsx", "Test copy with typed test adjustments, used only to check the formulas; not an appraisal", F.test_copy.sha256],
+  ].map(([n, d, s]) => `<li><a href="files/${n}" download>${n}</a><small>${esc(d)}</small><small>SHA-256 ${s}</small></li>`).join("");
+  $("#attr").textContent = D.attribution + " Council minutes from stlawboro.us. Listing facts quoted from MLS PABK2052516 as shown on coldwellbankerhomes.com and coalitionpg.com; listing pages are not republished.";
+}
+
+renderSheet();
+renderRun();
+show("row", 0, document.querySelector("#keys .key"));
+narrow.addEventListener("change", () => { const b = document.querySelector('[aria-pressed="true"]'); if (b) b.click(); });
+</script>
+</body>
+</html>

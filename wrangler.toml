@@ -1,0 +1,13 @@
+# Static page only: the recorded run, served under theaipipe.com/comp-to-excel/. No API calls, no database.
+name = "comp-to-excel"
+main = "site/worker.js"
+compatibility_date = "2026-09-01"
+workers_dev = false
+routes = [
+  { pattern = "theaipipe.com/comp-to-excel*", zone_name = "theaipipe.com" }
+]
+
+[assets]
+directory = "./site/public"
+binding = "ASSETS"
+html_handling = "auto-trailing-slash"

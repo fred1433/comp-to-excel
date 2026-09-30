@@ -1,0 +1,865 @@
+[
+ {
+  "doc": "minutes",
+  "file_sha256": "57a896a45d1b7c6c9a8edf208668337da84e720ca72d1e0a44026fdcecc2897b",
+  "layer_sha256": "e0a32bb66c45e5ff25f1c56057f33d77269f0ccc05b4755380162bccc04ec572",
+  "text_source": "tesseract-ocr",
+  "excerpt": true,
+  "pages": [
+   {
+    "page": 1,
+    "width": 612.0,
+    "height": 792.0,
+    "spans": [
+     {
+      "id": "minutes:p1:l1",
+      "text": "BOROUGH OF ST. LAWRENCE",
+      "bbox": [
+       243.1,
+       90.0,
+       369.1,
+       97.4
+      ]
+     },
+     {
+      "id": "minutes:p1:l2",
+      "text": "MEETING MINUTES",
+      "bbox": [
+       264.0,
+       104.2,
+       348.7,
+       111.4
+      ]
+     },
+     {
+      "id": "minutes:p1:l3",
+      "text": "Thursday, September 11, 2025",
+      "bbox": [
+       239.3,
+       117.6,
+       372.0,
+       127.0
+      ]
+     }
+    ]
+   },
+   {
+    "page": 3,
+    "width": 612.0,
+    "height": 792.0,
+    "spans": [
+     {
+      "id": "minutes:p3:l12",
+      "text": "real estate sale of 3540 St. Lawrence Ave. Reading, PA 19606 ( old Borough Hall), and personnel",
+      "bbox": [
+       77.8,
+       299.3,
+       485.5,
+       309.4
+      ]
+     },
+     {
+      "id": "minutes:p3:l13",
+      "text": "questions.",
+      "bbox": [
+       77.5,
+       313.4,
+       120.5,
+       322.3
+      ]
+     },
+     {
+      "id": "minutes:p3:l23",
+      "text": "MOTION: To take the offer that was presented on the sale of 3540 St. Lawrence Ave. Reading, PA",
+      "bbox": [
+       77.0,
+       453.1,
+       491.5,
+       463.0
+      ]
+     },
+     {
+      "id": "minutes:p3:l24",
+      "text": "19606 for $390,000.00 with no contingencies and closing in 30 days or as soon as possible. Dave",
+      "bbox": [
+       77.3,
+       466.3,
+       490.6,
+       476.9
+      ]
+     },
+     {
+      "id": "minutes:p3:l25",
+      "text": "Eggert made the motion; seconded by Rev. Bennethun; all were in favor and so the motion",
+      "bbox": [
+       77.0,
+       481.0,
+       467.8,
+       490.6
+      ]
+     },
+     {
+      "id": "minutes:p3:l26",
+      "text": "carried.",
+      "bbox": [
+       76.6,
+       494.9,
+       108.2,
+       502.3
+      ]
+     },
+     {
+      "id": "minutes:p3:l27",
+      "text": "MOTION: To authorize Pamela Stevens, SDE Engineer, Recreation Chair Dave Eggert, and Borough",
+      "bbox": [
+       76.8,
+       509.0,
+       495.8,
+       518.9
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "doc": "mls-cb",
+  "file_sha256": "575730eaf076880006f86e579cb59853a405c3367587277121ac9958490ceed7",
+  "layer_sha256": "382bf538c731623f67e800dd57769c82f00089dbbac23ca3b892e31a89ceac16",
+  "text_source": "pdf-text",
+  "excerpt": true,
+  "pages": [
+   {
+    "page": 1,
+    "width": 612.0,
+    "height": 792.0,
+    "spans": [
+     {
+      "id": "mls-cb:p1:l3",
+      "text": "3540 St Lawrence Ave Reading, PA 19606",
+      "bbox": [
+       27.7,
+       120.3,
+       339.7,
+       141.2
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l9",
+      "text": "the floors is accessible via elevator. The sale includes the additional land parcel in the rear that",
+      "bbox": [
+       27.7,
+       351.7,
+       546.2,
+       365.7
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l10",
+      "text": "provides additional paved parking, bringing the off-street parking to a total of 21 spaces.",
+      "bbox": [
+       27.7,
+       369.0,
+       509.4,
+       382.9
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l11",
+      "text": "Full Property Details for 3540 St Lawrence Ave",
+      "bbox": [
+       27.7,
+       387.0,
+       359.4,
+       405.6
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l13",
+      "text": "Sold For: $390,000",
+      "bbox": [
+       37.7,
+       439.5,
+       105.6,
+       448.8
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l14",
+      "text": "Taxes: (2024)",
+      "bbox": [
+       37.7,
+       453.0,
+       86.5,
+       462.3
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l18",
+      "text": "MLS ID: PABK2052516",
+      "bbox": [
+       37.7,
+       509.2,
+       114.1,
+       518.5
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l19",
+      "text": "Added to Site: 628 day(s) ago",
+      "bbox": [
+       37.7,
+       523.5,
+       145.0,
+       532.8
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l26",
+      "text": "Flooring: Wood",
+      "bbox": [
+       37.7,
+       642.0,
+       93.2,
+       651.3
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l27",
+      "text": "Lot Size (Acres): 0.31",
+      "bbox": [
+       304.6,
+       642.0,
+       384.2,
+       651.3
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l28",
+      "text": "Lot Size (Sq. Ft.): 13,503",
+      "bbox": [
+       304.6,
+       656.2,
+       396.8,
+       665.5
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l30",
+      "text": "Lot Size Source: Assessor",
+      "bbox": [
+       304.6,
+       669.7,
+       397.0,
+       679.0
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l41",
+      "text": "Zoning: BC AND R-6",
+      "bbox": [
+       304.6,
+       726.0,
+       375.0,
+       735.3
+      ]
+     },
+     {
+      "id": "mls-cb:p1:l42",
+      "text": "Lot Description: Corner",
+      "bbox": [
+       304.6,
+       740.2,
+       391.0,
+       749.5
+      ]
+     }
+    ]
+   },
+   {
+    "page": 2,
+    "width": 612.0,
+    "height": 792.0,
+    "spans": [
+     {
+      "id": "mls-cb:p2:l3",
+      "text": "Total Spaces: 21",
+      "bbox": [
+       37.7,
+       53.2,
+       97.2,
+       62.5
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l4",
+      "text": "Price Per Sq. Ft.: $83.17",
+      "bbox": [
+       304.6,
+       53.2,
+       395.1,
+       62.5
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l5",
+      "text": "Parking Features: Lighted Parking, Paved Parking",
+      "bbox": [
+       37.7,
+       67.5,
+       215.5,
+       76.8
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l6",
+      "text": "Assessment Year: 2024",
+      "bbox": [
+       304.6,
+       67.5,
+       388.2,
+       76.8
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l15",
+      "text": "County: Berks",
+      "bbox": [
+       37.7,
+       166.5,
+       88.6,
+       175.8
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l16",
+      "text": "Ownership: Fee Simple",
+      "bbox": [
+       304.6,
+       166.5,
+       389.1,
+       175.8
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l17",
+      "text": "Cross Streets: Brumbach",
+      "bbox": [
+       37.7,
+       180.7,
+       127.3,
+       190.0
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l18",
+      "text": "Exclusions: Furniture, Fixtures, Equipment and Inventory of Seller",
+      "bbox": [
+       304.6,
+       180.7,
+       543.8,
+       190.0
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l19",
+      "text": "Driving Directions: From Reading, East on Rte. 562 (St. Lawrence Ave)",
+      "bbox": [
+       37.7,
+       195.0,
+       291.9,
+       204.3
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l20",
+      "text": "Lot Number: 5915",
+      "bbox": [
+       304.6,
+       195.0,
+       370.8,
+       204.3
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l38",
+      "text": "Stories/Levels: 2",
+      "bbox": [
+       37.7,
+       532.5,
+       99.7,
+       541.8
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l39",
+      "text": "Year Built: 1900",
+      "bbox": [
+       37.7,
+       546.0,
+       96.1,
+       555.3
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l40",
+      "text": "Year Built Source: Estimated",
+      "bbox": [
+       37.7,
+       560.2,
+       143.0,
+       569.5
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l42",
+      "text": "Listed by RE/MAX Of Reading, Randy L Weidner",
+      "bbox": [
+       27.7,
+       613.1,
+       238.9,
+       624.7
+      ]
+     },
+     {
+      "id": "mls-cb:p2:l43",
+      "text": "Sold by Atlas Land and Homes, Israel Gonzalez and Atlas Land and Homes, Marcus Gonzalez",
+      "bbox": [
+       27.7,
+       628.1,
+       437.1,
+       639.7
+      ]
+     }
+    ]
+   },
+   {
+    "page": 3,
+    "width": 612.0,
+    "height": 792.0,
+    "spans": [
+     {
+      "id": "mls-cb:p3:l21",
+      "text": "10/10/2025",
+      "bbox": [
+       27.7,
+       388.5,
+       90.7,
+       402.4
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l22",
+      "text": "7/15/2025",
+      "bbox": [
+       27.7,
+       405.0,
+       84.4,
+       418.9
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l23",
+      "text": "1/10/2025",
+      "bbox": [
+       27.7,
+       421.5,
+       84.4,
+       435.4
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l28",
+      "text": "Sold",
+      "bbox": [
+       183.5,
+       388.5,
+       205.9,
+       402.4
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l29",
+      "text": "Price Reduced",
+      "bbox": [
+       156.8,
+       405.0,
+       232.6,
+       418.9
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l30",
+      "text": "Listed",
+      "bbox": [
+       178.5,
+       421.5,
+       210.9,
+       435.4
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l31",
+      "text": "$390,000",
+      "bbox": [
+       281.8,
+       388.5,
+       330.2,
+       402.4
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l32",
+      "text": "$499,000",
+      "bbox": [
+       281.8,
+       405.0,
+       330.2,
+       418.9
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l33",
+      "text": "$575,000",
+      "bbox": [
+       281.8,
+       421.5,
+       330.2,
+       435.4
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l34",
+      "text": "-21.84%",
+      "bbox": [
+       396.7,
+       388.5,
+       437.9,
+       402.4
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l35",
+      "text": "-13.22%",
+      "bbox": [
+       396.7,
+       405.0,
+       437.9,
+       418.9
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l36",
+      "text": "\u2014",
+      "bbox": [
+       412.9,
+       421.5,
+       421.7,
+       435.4
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l37",
+      "text": "MLS",
+      "bbox": [
+       518.4,
+       388.5,
+       538.8,
+       402.4
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l38",
+      "text": "MLS",
+      "bbox": [
+       518.4,
+       405.0,
+       538.8,
+       418.9
+      ]
+     },
+     {
+      "id": "mls-cb:p3:l39",
+      "text": "MLS",
+      "bbox": [
+       518.4,
+       421.5,
+       538.8,
+       435.4
+      ]
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "doc": "mls-coalition",
+  "file_sha256": "cabb482c52157caf498100c68f336d13751143234a5e493483a278ce428850f4",
+  "layer_sha256": "73d86a8eb0c70e8680575c56acbf5080d644de9fc313c4e136c16f427af26f2d",
+  "text_source": "pdf-text",
+  "excerpt": true,
+  "pages": [
+   {
+    "page": 1,
+    "width": 612.0,
+    "height": 792.0,
+    "spans": [
+     {
+      "id": "mls-coalition:p1:l5",
+      "text": "3540 Saint Lawrence Ave, Reading, PA 19606",
+      "bbox": [
+       43.5,
+       556.4,
+       275.7,
+       569.6
+      ]
+     },
+     {
+      "id": "mls-coalition:p1:l6",
+      "text": "$390,000",
+      "bbox": [
+       43.5,
+       585.3,
+       99.4,
+       600.0
+      ]
+     },
+     {
+      "id": "mls-coalition:p1:l7",
+      "text": "Est. $2,381/mo",
+      "bbox": [
+       43.5,
+       603.9,
+       113.5,
+       615.8
+      ]
+     },
+     {
+      "id": "mls-coalition:p1:l8",
+      "text": "6,000",
+      "bbox": [
+       357.0,
+       585.3,
+       390.1,
+       600.0
+      ]
+     },
+     {
+      "id": "mls-coalition:p1:l9",
+      "text": "0.31",
+      "bbox": [
+       491.1,
+       585.3,
+       516.6,
+       600.0
+      ]
+     },
+     {
+      "id": "mls-coalition:p1:l10",
+      "text": "Sqft",
+      "bbox": [
+       365.3,
+       603.3,
+       381.8,
+       613.6
+      ]
+     },
+     {
+      "id": "mls-coalition:p1:l11",
+      "text": "Acreage",
+      "bbox": [
+       487.3,
+       603.3,
+       520.4,
+       613.6
+      ]
+     },
+     {
+      "id": "mls-coalition:p1:l14",
+      "text": "Status: CLOSED | Days on site: 628",
+      "bbox": [
+       56.6,
+       636.1,
+       216.1,
+       647.9
+      ]
+     },
+     {
+      "id": "mls-coalition:p1:l15",
+      "text": "have any questions and an agent",
+      "bbox": [
+       377.4,
+       635.5,
+       523.9,
+       647.2
+      ]
+     },
+     {
+      "id": "mls-coalition:p1:l16",
+      "text": "Get Pre-Qualified",
+      "bbox": [
+       59.2,
+       654.3,
+       141.9,
+       666.2
+      ]
+     }
+    ]
+   },
+   {
+    "page": 3,
+    "width": 612.0,
+    "height": 792.0,
+    "spans": [
+     {
+      "id": "mls-coalition:p3:l2",
+      "text": "Randy L Weidner",
+      "bbox": [
+       43.5,
+       59.4,
+       122.0,
+       71.1
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l3",
+      "text": "RE/MAX Of Reading , 6106702770.",
+      "bbox": [
+       43.5,
+       77.1,
+       206.0,
+       88.8
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l6",
+      "text": "Lot/Acreage",
+      "bbox": [
+       43.5,
+       149.7,
+       99.4,
+       161.5
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l7",
+      "text": "0.31",
+      "bbox": [
+       548.1,
+       149.7,
+       568.5,
+       161.5
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l8",
+      "text": "Year Built",
+      "bbox": [
+       43.5,
+       181.1,
+       88.1,
+       192.9
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l9",
+      "text": "1900",
+      "bbox": [
+       544.2,
+       181.1,
+       568.5,
+       192.9
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l16",
+      "text": "Listing ID",
+      "bbox": [
+       43.5,
+       306.8,
+       86.9,
+       318.6
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l17",
+      "text": "PABK2052516",
+      "bbox": [
+       499.3,
+       306.8,
+       568.5,
+       318.6
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l32",
+      "text": "Zoning: Front Parcel is Borough Center and the rear parcel is R-6 Urban",
+      "bbox": [
+       43.5,
+       668.3,
+       408.4,
+       681.5
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l33",
+      "text": "Residential",
+      "bbox": [
+       410.7,
+       668.3,
+       468.2,
+       681.5
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l34",
+      "text": "possible.",
+      "bbox": [
+       377.4,
+       671.5,
+       417.0,
+       683.2
+      ]
+     },
+     {
+      "id": "mls-coalition:p3:l35",
+      "text": "Roof: Shingle",
+      "bbox": [
+       43.5,
+       689.3,
+       111.3,
+       702.5
+      ]
+     }
+    ]
+   },
+   {
+    "page": 4,
+    "width": 612.0,
+    "height": 792.0,
+    "spans": [
+     {
+      "id": "mls-coalition:p4:l1",
+      "text": "Parking Features: Lighted Parking,Paved Parking,Parking Lot,4+ Spaces,3+ Spaces,2+ Spaces,1+",
+      "bbox": [
+       43.5,
+       30.0,
+       530.9,
+       43.2
+      ]
+     },
+     {
+      "id": "mls-coalition:p4:l2",
+      "text": "Spaces",
+      "bbox": [
+       43.5,
+       48.4,
+       79.0,
+       61.6
+      ]
+     }
+    ]
+   }
+  ]
+ }
+]

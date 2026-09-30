@@ -1,0 +1,38 @@
+{
+ "retrieved_on": "2026-09-30",
+ "documents": {
+  "county": {
+   "kind": "county open-data record",
+   "parcel": "81532611565915",
+   "local_file": "county_81532611565915.json",
+   "url": "https://services3.arcgis.com/dGYe1jDYrTw1wwpc/arcgis/rest/services/Berks_Assessment_CAMA_Master_File/FeatureServer/14",
+   "also": "https://services3.arcgis.com/dGYe1jDYrTw1wwpc/arcgis/rest/services/Berks_Assessment_CAMA_Commercial_File/FeatureServer/13",
+   "retrieved_at": "2026-09-30T12:53:34+00:00",
+   "terms": "County of Berks GIS Data General Agreement and Terms: no redistribution in original format; derived products cite the county.",
+   "sha256": null
+  },
+  "minutes": {
+   "kind": "scanned PDF",
+   "local_file": "minutes_2025-09-11.pdf",
+   "url": "https://img1.wsimg.com/blobby/go/60f8422f-5b29-4bab-bc8d-db8c4445d7a6/downloads/b99a463d-f52e-49d6-9379-4ee6afe35513/Approved%20September%2011%202025.pdf?ver=1789993859565",
+   "found_on": "https://stlawboro.us/meeting-minutes",
+   "retrieved_at": "2026-09-30",
+   "sha256": "57a896a45d1b7c6c9a8edf208668337da84e720ca72d1e0a44026fdcecc2897b"
+  },
+  "mls-cb": {
+   "kind": "listing page saved as PDF",
+   "local_file": "listing_coldwellbanker.pdf",
+   "url": "https://www.coldwellbankerhomes.com/pa/reading-berks-county/3540-saint-lawrence-ave/pid_63121617/",
+   "retrieved_at": "2026-09-30",
+   "sha256": "575730eaf076880006f86e579cb59853a405c3367587277121ac9958490ceed7"
+  },
+  "mls-coalition": {
+   "kind": "listing page saved as PDF",
+   "local_file": "listing_coalition.pdf",
+   "url": "https://www.coalitionpg.com/search/pennsylvania/reading/misc/3540-saint-lawrence-ave-bid-262-PABK2052516",
+   "retrieved_at": "2026-09-30",
+   "sha256": "cabb482c52157caf498100c68f336d13751143234a5e493483a278ce428850f4"
+  }
+ },
+ "not_republished": "No source document is stored in this repository. Only URLs, dates, SHA-256 and the cited lines are."
+}

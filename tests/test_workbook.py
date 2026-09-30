@@ -109,3 +109,32 @@ def test_macro_project_survives_byte_for_byte(root, tmp_path):
 def test_blank_adjustment_is_never_zero():
     g = gridmath.column(390000, 7354, 0.57, [("pct", 0.0), ("pct", None), ("pct", 0.0), ("usd", 0.0), ("pct", 0.0)], [0.0] * 7)
     assert g["price_per_sf"] and g["adjusted_per_sf"] is None and g["steps"][1] is None
+
+
+def test_array_formula_result_cells_are_not_inputs(tmp_path):
+    import xlsxwriter
+    path = tmp_path / "array.xlsx"
+    wb = xlsxwriter.Workbook(str(path))
+    ws = wb.add_worksheet("S")
+    ws.write("A9", 2)
+    ws.write("B9", 3)
+    ws.write_array_formula("C9:D9", "{=A9:B9*2}")
+    wb.close()
+    with pytest.raises(writer.WriteRefused, match="array or shared formula range"):
+        writer.patch(path, tmp_path / "out.xlsx", "S", {"D9": 5.0}, {"D9"})
+    with pytest.raises(writer.WriteRefused, match="array or shared formula range"):  # the map alone is enough to refuse
+        writer.patch(path, tmp_path / "out.xlsx", "S", {}, {"D9"})
+
+
+def test_resume_states(template, tmp_path):
+    out = entered(template, tmp_path)
+    sha = acceptance.sha256_file(out)
+    assert writer.resume_state(out, sha) == "expected"
+    assert writer.resume_state(tmp_path / "absent.xlsx", sha) == "missing"
+    changed = writer.patch(out, tmp_path / "changed.xlsx", SHEET, {f"D{GBA}": 6000.0}, {f"D{GBA}"})
+    assert writer.resume_state(changed, sha) == "different"
+
+
+def test_destination_is_generated_from_the_map():
+    from comptrace.workbook import destination
+    assert destination("D") == "Sales Comparison!D5:D9, D11:D22"

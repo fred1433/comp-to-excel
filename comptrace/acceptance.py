@@ -5,7 +5,7 @@ Two independent checks:
     worksheet; inside it, only the `<c>` elements of the approved cells differ, and the XML around the cell data
     is byte-identical.
   * manifest: what the workbook computes with, read back from the file: every formula on every sheet (hidden sheets
-    included, shared and array formulas expanded), defined names, conditional-format rules, data-validation rules,
+    included; an array formula is recorded once with its range), defined names, conditional-format rules, data-validation rules,
     calculation settings, every constant outside the input cells, cell styles, sheet structure and the macro
     project if there is one. Its hash must be identical before and after; only the approved input cells may change.
 A formula edited by hand, a defined name repointed or a protected constant changed each change the hash.

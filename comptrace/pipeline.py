@@ -18,10 +18,10 @@ from psycopg.types.json import Jsonb
 
 from . import acceptance, writer
 from .verify import Registry, check_all
-from .workbook import SHEET, input_cells
+from .workbook import SHEET, destination, input_cells
 
 HERE = Path(__file__).resolve().parent
-DESTINATION = f"{SHEET}!D5:D17 (Comparable 1)"
+DESTINATION = destination("D") + " (Comparable 1)"
 
 DOC_LABELS = {
     "county": "Berks County assessment record (county open-data service)",
@@ -259,7 +259,7 @@ class Run:
         n_cond = pick("minutes", "sale_condition")
         n_seller = pick("minutes", "seller")
         n_hall = pick("minutes", "address")
-        c_owner = pick("county", "buyer")
+        c_owner = pick("county", "current_owner")
         m_stories = pick("mls-cb", "stories")
         c_sections = county_sections(self.layers)
         acres_total = round(sum(float(f["value"]) for f in c_acres), 2)
@@ -273,7 +273,7 @@ class Run:
             "sale_date": {"value": c_date["value"], "facts": ids(c_date, m_date),
                           "rule": "county 'Sale Date' field, which does not say whether it is the deed or the recording date; the MLS sold date agrees"},
             "sale_price": {"value": float(c_price["value"]), "facts": ids(c_price, m_price), "corroboration": ids(n_offer),
-                           "rule": "county sale price on the recorded instrument; the MLS sold price agrees; the council's accepted offer, 29 days earlier, corroborates"},
+                           "rule": "county assessment record's sale-price field; the record lists instrument 2025031513. The MLS sold price agrees; the council's accepted offer, 29 days earlier, corroborates"},
             "gba_sf": {"value": None, "facts": ids(c_gba, k_gba), "status": "appraiser to choose",
                        "choices": [{"basis": "county assessor, floor lines 1 to 3", "sf": float(c_gba["value"]), "fact": c_gba["id"]},
                                    {"basis": "listing site", "sf": float(k_gba["value"]), "fact": k_gba["id"]}],
@@ -287,9 +287,9 @@ class Run:
                            "conflict": {"value": float(m_year["value"]), "fact": m_year["id"], "note": "MLS shows 1900, with Year Built Source: Estimated on the next line"}},
             "zoning": {"value": m_zoning["value"].replace("AND", "and"), "facts": ids(m_zoning), "rule": "MLS, only source"},
             "grantor": {"value": "St. Lawrence Borough; the property is the former borough hall", "facts": ids(n_seller, n_hall),
-                        "rule": "council minutes: the borough's council voted the sale of its old borough hall"},
-            "grantee": {"value": f"{c_owner['value'].title().replace('Llc', 'LLC')} (current owner per county record, not read from the deed)",
-                        "facts": ids(c_owner), "rule": "county owner of record today; the deed was not retrieved"},
+                        "rule": "seller as reported in the council minutes, which record the vote to sell the old borough hall; the deed was not read"},
+            "grantee": {"value": f"{c_owner['value'].title().replace('Llc', 'LLC')}; buyer not read from the deed",
+                        "facts": ids(c_owner), "rule": "current owner on the county record today; the deed, and so the buyer of record, was not retrieved"},
             "property_rights": {"value": f"{m_rights['value']}, per the MLS Ownership field; not verified", "facts": ids(m_rights),
                                 "rule": "reported, not verified"},
             "sale_conditions": {"value": f"No contingencies; closing in 30 days or as soon as possible (council motion, 9/11/2025)",
@@ -352,9 +352,12 @@ class Run:
             for field, cell in m.items():
                 val = entry[field]["value"]
                 writes[cell] = date.fromisoformat(val) if field == "sale_date" else val
-            done = c.execute("select op_id, output_sha256 from comp.write_operation where approval_id = %s and status = 'done'", (appr[0],)).fetchone()
-            if done:
-                return {"outcome": "already_written", "op_id": str(done[0]), "output_sha256": done[1]}
+            done = c.execute("select op_id, output_sha256, output_path from comp.write_operation where approval_id = %s and status = 'done'", (appr[0],)).fetchone()
+            if done:  # a receipt is not a confirmation: look at the file again
+                state = writer.resume_state(Path(done[2]), done[1])
+                outcome = "already_written_file_verified" if state == "expected" else f"receipt_mismatch_{state}"
+                self.audit("comp_writer", outcome, str(done[0]), output_sha256=done[1])
+                return {"outcome": outcome, "op_id": str(done[0]), "output_sha256": done[1]}
             pending = c.execute("select op_id, expected_patched_sha256, output_path from comp.write_operation where approval_id = %s and status = 'intent'",
                                 (appr[0],)).fetchone()
             if pending:
@@ -398,18 +401,26 @@ class Run:
         return {"outcome": "written", "op_id": str(op), "output_sha256": out_sha, "verification": v}
 
     def _resume(self, c, pending, writes: dict, m: dict) -> dict:
+        """Three states: the expected file is there (verify and finish), no file (regenerate), another file is there
+        (stop and report a conflict; never overwrite what someone may have typed since)."""
         op, expected, path = pending
         output = Path(path)
-        if output.exists() and acceptance.sha256_file(output) == expected:
-            self.audit("comp_writer", "write_resumed", str(op), found="output already saved with the expected hash; verified, not rewritten")
+        state = writer.resume_state(output, expected)
+        if state == "expected":
+            self.audit("comp_writer", "write_resumed", str(op), found="output saved with the expected hash; verified, not rewritten")
             r = self._finish(c, op, output, writes, m)
             r["outcome"] = "resumed_without_rewrite"
             return r
-        writer.patch(self.template, output, SHEET, writes, set(m.values()))
-        self.audit("comp_writer", "write_resumed", str(op), found="output missing or different; rewritten from the template")
-        r = self._finish(c, op, output, writes, m)
-        r["outcome"] = "resumed_with_rewrite"
-        return r
+        if state == "missing":
+            writer.patch(self.template, output, SHEET, writes, set(m.values()))
+            self.audit("comp_writer", "write_resumed", str(op), found="no output file; regenerated from the template")
+            r = self._finish(c, op, output, writes, m)
+            r["outcome"] = "resumed_regenerated"
+            return r
+        found = acceptance.sha256_file(output)
+        self.audit("comp_writer", "write_conflict", str(op), expected_sha256=expected, found_sha256=found,
+                   decision="stopped; the file on disk was not overwritten")
+        return {"outcome": "conflict_not_overwritten", "op_id": str(op), "expected_sha256": expected, "found_sha256": found}
 
     def approve(self, who: str) -> str:
         with self.conn("comp_reviewer") as c:

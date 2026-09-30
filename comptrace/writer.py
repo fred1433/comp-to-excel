@@ -3,7 +3,9 @@
 The workbook package is rebuilt part by part in the original order with the original compression settings; only
 the worksheet part changes, and inside it only the `<c>` elements of the mapped cells. Refusals:
   * a cell that is not in the approved input map;
-  * a cell whose current element holds a formula;
+  * a cell whose current element holds a formula, or that lies in an array or shared formula range (a result
+    cell of an array formula holds no formula of its own), and any input map that touches such a range;
+  * a template with a calculation mechanism it does not handle (what-if data tables);
   * a cell that is absent from the template (the template must declare every input cell).
 Strings are written inline (`t="inlineStr"`) so the shared-strings part stays byte-identical.
 """
@@ -40,7 +42,29 @@ def _render(ref: str, style: bytes, value) -> bytes:
     return b'<c r="%s"%s t="inlineStr"><is><t%s>%s</t></is></c>' % (ref.encode(), style, space.encode(), text.encode())
 
 
+def _cells_in(rng: str) -> set[str]:
+    from openpyxl.utils.cell import range_boundaries, get_column_letter
+    c0, r0, c1, r1 = range_boundaries(rng)
+    return {f"{get_column_letter(c)}{r}" for c in range(c0, c1 + 1) for r in range(r0, r1 + 1)}
+
+
+def calculated_ranges(xml: bytes) -> set[str]:
+    """Cells computed by a range formula (array or shared) even when their own element holds no formula."""
+    if re.search(rb'<f[^>]*\st="dataTable"', xml):
+        raise WriteRefused("the template uses a what-if data table, an unsupported calculated range; refused")
+    cells: set[str] = set()
+    for m in re.finditer(rb'<f[^>]*\st="(?:array|shared)"[^>]*\sref="([A-Z]+\d+(?::[A-Z]+\d+)?)"', xml):
+        cells |= _cells_in(m.group(1).decode())
+    for m in re.finditer(rb'<f[^>]*\sref="([A-Z]+\d+(?::[A-Z]+\d+)?)"[^>]*\st="(?:array|shared)"', xml):
+        cells |= _cells_in(m.group(1).decode())
+    return cells
+
+
 def patch_sheet_xml(xml: bytes, writes: dict[str, object], allowed: set[str]) -> bytes:
+    computed = calculated_ranges(xml)
+    for ref in list(writes) + sorted(allowed):
+        if ref in computed:
+            raise WriteRefused(f"{ref} lies in an array or shared formula range; the input map may hold only input cells")
     for ref, value in writes.items():
         if ref not in allowed:
             raise WriteRefused(f"{ref} is not in the approved input map")
@@ -75,3 +99,12 @@ def patch(template: Path, out: Path, sheet_name: str, writes: dict[str, object],
                 zout.writestr(info, data, compress_type=info.compress_type)
     tmp.replace(out)
     return out
+
+
+def resume_state(output: Path, expected_sha256: str) -> str:
+    """'expected' (the file is there with the hash the intent recorded), 'missing', or 'different'."""
+    import hashlib
+    output = Path(output)
+    if not output.exists():
+        return "missing"
+    return "expected" if hashlib.sha256(output.read_bytes()).hexdigest() == expected_sha256 else "different"

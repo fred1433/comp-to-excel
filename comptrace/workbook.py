@@ -31,8 +31,8 @@ FACT_ROWS = [  # (row, field, label, machine-written?)
     (12, "land_acres", "Land area (acres)", True),
     (13, "year_built", "Year built", True),
     (14, "zoning", "Zoning", True),
-    (15, "grantor", "Grantor (seller)", True),
-    (16, "grantee", "Grantee (buyer)", True),
+    (15, "grantor", "Seller (reported in council minutes)", True),
+    (16, "grantee", "Current owner (county record)", True),
     (17, "property_rights", "Property rights (reported)", True),
     (18, "sale_conditions", "Conditions of sale (reported)", True),
     (19, "marketing", "Marketing history (reported)", True),
@@ -61,6 +61,17 @@ REC_HEAD, REC_PSF, VALUE, REC_NOTE = 52, 53, 54, 55
 def input_cells(col: str) -> dict[str, str]:
     """field name -> cell, for the reported-fact rows the machine may write in one column."""
     return {field: f"{col}{row}" for row, field, _, machine in FACT_ROWS if machine}
+
+
+def destination(col: str = "D") -> str:
+    """The approved destination, generated from the input map: contiguous runs of input rows."""
+    rows = sorted(row for row, _, _, machine in FACT_ROWS if machine)
+    runs, start = [], rows[0]
+    for a, b in zip(rows, rows[1:] + [None]):
+        if b != a + 1:
+            runs.append(f"{col}{start}:{col}{a}" if a != start else f"{col}{a}")
+            start = b
+    return f"{SHEET}!" + ", ".join(runs)
 
 
 def appraiser_cells(col: str) -> dict[str, str]:

@@ -27,11 +27,13 @@ def test_change_after_approval_invalidates_the_write(result):
     assert w["outcome"] == "refused" and "changed after approval" in w["reason"]
 
 
-def test_resume_after_crash_finishes_without_rewriting(result):
+def test_resume_never_overwrites_a_changed_file(result):
     w = outcomes(result, "write")
-    assert [x["outcome"] for x in w[2:5]] == ["worker_stopped_after_save", "resumed_without_rewrite", "already_written"]
-    assert w[2]["file_sha256"] == w[3]["output_sha256"] == result["files"]["delivered"]["sha256"]
-    assert w[5]["rows"] == [["done", 1]]
+    assert [x["outcome"] for x in w[2:6]] == ["worker_stopped_after_save", "conflict_not_overwritten", "resumed_regenerated",
+                                              "already_written_file_verified"]
+    assert w[3]["d10_after"] == 6000 and w[3]["found_sha256"] != w[3]["expected_sha256"]
+    assert w[2]["file_sha256"] == w[4]["output_sha256"] == result["files"]["delivered"]["sha256"]
+    assert w[6]["rows"] == [["done", 1]]
 
 
 def test_matching_cases(result):

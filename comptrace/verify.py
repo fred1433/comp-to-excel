@@ -3,9 +3,12 @@
 A fact is accepted only if, in this order:
   1. every cited span exists in the local page registry of that document;
   2. the quote appears literally (whitespace-normalized) in the cited span text;
-  3. the meaning code is supported by the words on the cited line or its label neighbours
-     (same visual row, or the label printed just under the value);
-  4. the normalized value is what the quote says (numbers and dates parsed from the quote).
+  3. the normalized value is what the quote says (numbers and dates parsed from the quote; a price must be written
+     as an amount of money; a negation in the quote must survive in a text value);
+  4. for selected field types, the line that holds the value, with its own row and the label printed just above or
+     under it, names what the value is and does not name something else (sold against asking, building against lot);
+     a county field is checked against the field it comes from; a derived sum names each operand's field once.
+These checks do not replace appraisal review.
 Anything else stays pending, with its reason. Nothing here asks a model.
 """
 from __future__ import annotations
@@ -102,6 +105,60 @@ class Registry:
         return " ".join(texts)
 
 
+PRICE_CODES = {"sold_price", "accepted_offer_price", "asking_price", "price_per_sf_reported"}
+# words that, next to the value, say it is something else
+CONTRADICTS = {
+    "sold_price": ["price reduced", "listed", "asking", "per sq"],
+    "asking_price": ["sold"],
+    "sale_date": ["listed", "price reduced"],
+    "listing_date": ["sold", "reduced"],
+    "price_change_date": ["sold", "listed"],
+    "gross_building_area": ["lot", "acre"],
+}
+# structured county records: the field itself is the label
+COUNTY_FIELDS = {"sold_price": {"PRICE", "SALEPR1"}, "sale_date": {"SALEDT"}, "other": {"INSTRUNO"}, "current_owner": {"OWN1"},
+                 "address": {"ADDRESS"}, "parcel_or_lot_id": {"PARID"}, "lot_area": {"ACRES"}, "year_built": {"YRBLT"},
+                 "gross_building_area": {"AREA"}}
+NEGATIONS = {"no", "not", "without", "non", "never", "none"}
+
+
+def _article(what: str) -> str:
+    return "an" if what[0] in "aeiou" else "a"
+
+
+def _number_occurrences(text: str, v: float) -> list[re.Match]:
+    out = []
+    for m in re.finditer(r"\d[\d,]*(?:\.\d+)?", text):
+        tok = m.group(0).rstrip(",")
+        if re.fullmatch(r"\d{1,3}(,\d{3})+(\.\d+)?|\d+(\.\d+)?", tok) and abs(float(tok.replace(",", "")) - v) < 1e-9:
+            out.append(m)
+    return out
+
+
+def _is_amount(text: str, m: re.Match) -> bool:
+    """An amount of money: written with $ and not followed by a unit of time or a percent sign."""
+    before, after = text[: m.start()].rstrip(), text[m.end():].lstrip().lower()
+    return before.endswith("$") and not re.match(r"(%|days?\b|years?\b|months?\b|weeks?\b)", after)
+
+
+def _bound(code: str, span_ids: list[str], reg: "Registry", holds) -> tuple[bool, str]:
+    """The value must sit on a cited line whose own label context (that line, its row, the label above or below it)
+    says what the value means and does not say it is something else. Words from other cited lines do not count."""
+    words, bad = MEANING_WORDS.get(code, []), CONTRADICTS.get(code, [])
+    carriers = [sid for sid in span_ids if holds(reg.spans[sid]["text"])]
+    if not carriers:
+        return False, "the value is not on any cited line"
+    what = code.replace("_", " ")
+    for sid in carriers:
+        ctx = reg.context([sid]).lower()
+        if words and not any(w in ctx for w in words):
+            continue
+        if any(w in ctx for w in bad):
+            continue
+        return True, ""
+    return False, f"the line that holds the value does not label it as {_article(what)} {what}"
+
+
 def check_fact(fact: dict, reg: Registry) -> tuple[str, str | None]:
     """Return ("verified", None) or ("rejected", reason)."""
     doc, code, value = fact["doc"], fact["meaning_code"], str(fact["value"]).strip()
@@ -114,26 +171,42 @@ def check_fact(fact: dict, reg: Registry) -> tuple[str, str | None]:
     quote = norm(fact["quote"])
     if not quote or quote not in cited:
         return "rejected", "quote is not on the cited lines as written"
-    words = MEANING_WORDS.get(code)
-    if words:
-        ctx = reg.context(fact["span_ids"]).lower()
-        if not any(w in ctx for w in words):
-            what = code.replace("_", " ")
-            return "rejected", f"nothing on or beside the cited line says this is {'an' if what[0] in 'aeiou' else 'a'} {what}"
+    structured = all(not reg.spans[s].get("bbox") for s in fact["span_ids"])
+    what = code.replace("_", " ")
+    if structured:
+        fields = {s.rsplit(":", 1)[1] for s in fact["span_ids"]}
+        allowed = COUNTY_FIELDS.get(code)
+        if allowed is None or not fields <= allowed:
+            return "rejected", f"field {', '.join(sorted(fields))} does not hold {_article(what)} {what}"
+
     if code in NUMERIC:
         try:
             v = float(value.replace(",", "").replace("$", ""))
         except ValueError:
             return "rejected", f"value {value!r} is not a number"
         derived = fact.get("derived_from")
-        if derived:  # the only transformation allowed: a sum of numbers the quote states
-            nums = numbers_in(quote)
-            if derived.get("op") != "sum" or not all(any(abs(o - n) < 1e-9 for n in nums) for o in derived["operands"]):
-                return "rejected", "the operands of the derived value are not all in the quote"
-            if abs(sum(derived["operands"]) - v) > 1e-9:
+        if derived:  # the only transformation allowed: a sum of labelled operands, each a distinct field of the quote
+            ops = derived.get("operands", [])
+            if derived.get("op") != "sum" or not ops or not all(isinstance(o, dict) and o.get("label") for o in ops):
+                return "rejected", "each operand of a derived value must name the field it comes from"
+            labels = [o["label"] for o in ops]
+            if len(set(labels)) != len(labels):
+                return "rejected", "an operand field is used more than once"
+            for o in ops:
+                if f"{o['label']} {o['value']}" not in quote:
+                    return "rejected", f"the quote does not give {o['label']} as {o['value']}"
+            if abs(sum(o["value"] for o in ops) - v) > 1e-9:
                 return "rejected", f"the operands do not add up to {value}"
-        elif not any(abs(v - n) < 1e-9 for n in numbers_in(quote)):
-            return "rejected", f"the quote does not state {value}"
+        else:
+            occ = _number_occurrences(quote, v)
+            if not occ:
+                return "rejected", f"the quote does not state {value}"
+            if code in PRICE_CODES and not structured and not any(_is_amount(quote, m) for m in occ):
+                return "rejected", f"{value} is not written as an amount of money in the quote"
+            if not structured:
+                ok, why = _bound(code, fact["span_ids"], reg, lambda t: bool(_number_occurrences(t, v)))
+                if not ok:
+                    return "rejected", why
     elif code in DATES:
         try:
             v = datetime.strptime(value, "%Y-%m-%d").date()
@@ -141,14 +214,29 @@ def check_fact(fact: dict, reg: Registry) -> tuple[str, str | None]:
             return "rejected", f"value {value!r} is not a YYYY-MM-DD date"
         if v not in dates_in(quote):
             return "rejected", f"the quote does not state the date {value}"
+        if not structured:
+            ok, why = _bound(code, fact["span_ids"], reg, lambda t: v in dates_in(t))
+            if not ok:
+                return "rejected", why
     else:
+        words = MEANING_WORDS.get(code)
+        if words and not structured:
+            ctx = reg.context(fact["span_ids"]).lower()
+            if not any(w in ctx for w in words):
+                return "rejected", f"nothing on or beside the cited line says this is {_article(what)} {what}"
         q = quote.lower()
-        # a word counts as present if the quote has it, or a word with the same first six letters (provides / providing)
+        vl = value.lower()
         qwords = re.findall(r"[a-z0-9][a-z0-9\-\+/\.]*", q)
-        present = lambda w: w in q or (len(w) > 6 and any(x[:6] == w[:6] for x in qwords))
-        missing = [w for w in re.findall(r"[a-z0-9][a-z0-9\-\+/\.]*", value.lower()) if len(w) > 2 and not present(w.strip("."))]
+        vwords = re.findall(r"[a-z0-9][a-z0-9\-\+/\.]*", vl)
+        # a word counts as present if the quote has it, or a word with the same first six letters (provides / providing)
+        present = lambda w: w in qwords or w in q or (len(w) > 6 and any(x[:6] == w[:6] for x in qwords))
+        missing = [w for w in vwords if (len(w) > 2 or w in NEGATIONS) and not present(w.strip("."))]
         if missing:
             return "rejected", "the value adds words the quote does not contain: " + ", ".join(missing[:4])
+        # a negation in the quote must survive in the value when the word it negates does
+        for i, w in enumerate(qwords[:-1]):
+            if w in NEGATIONS and qwords[i + 1].strip(".,;") in vwords and w not in vwords:
+                return "rejected", f"the value drops the negation in \"{w} {qwords[i + 1]}\""
     return "verified", None
 
 

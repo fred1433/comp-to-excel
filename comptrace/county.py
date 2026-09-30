@@ -59,7 +59,7 @@ def facts_from_records(rec: dict) -> dict:
         {"doc": "county", "meaning_code": "address", "meaning": "site address on the assessment record",
          "value": f"{m['ADRNO']} {m['ADRSTR']} {m['ADRSUF']}", "span_ids": [sid("ADDRESS")],
          "quote": f"ADRNO/ADRSTR/ADRSUF (site address) = {m['ADRNO']} {m['ADRSTR']} {m['ADRSUF']}"},
-        {"doc": "county", "meaning_code": "buyer", "meaning": "current owner of record (OWN1), not read from the deed",
+        {"doc": "county", "meaning_code": "current_owner", "meaning": "current owner of record (OWN1), not read from the deed",
          "value": m["OWN1"], "span_ids": [sid("OWN1")], "quote": f"OWN1 (Owner Info 1) = {m['OWN1']}"},
     ]
     for p in rec["same_instrument"]:
@@ -83,9 +83,9 @@ def facts_from_records(rec: dict) -> dict:
                                  "area_sf": c[f"AREA{i}"], "use_type": c[f"USETYPE{i}"]})
     above = [s for s in sections if not s["floor_from"].startswith("B")]
     below = [s for s in sections if s["floor_from"].startswith("B")]
-    facts.append({"doc": "county", "meaning_code": "gross_building_area", "meaning": "above-grade area, sum of assessor floor lines 1 to 3",
+    facts.append({"doc": "county", "meaning_code": "gross_building_area", "meaning": "sum of the assessor's floor lines 1 to 3",
                   "value": str(sum(s["area_sf"] for s in above)), "span_ids": [sid("AREA")],
-                  "derived_from": {"op": "sum", "operands": [s["area_sf"] for s in above]},
+                  "derived_from": {"op": "sum", "operands": [{"label": FLOOR_LABEL.get(s["floor_from"], s["floor_from"]), "value": s["area_sf"]} for s in above]},
                   "quote": "AREA by floor (sq ft) = " + ", ".join(f"{FLOOR_LABEL.get(s['floor_from'], s['floor_from'])} {s['area_sf']}" for s in sections)})
     return {"parid": parid, "retrieved_at": rec["retrieved_at"], "attribution": ATTRIBUTION, "facts": facts,
             "sections": sections, "below_grade_sf": sum(s["area_sf"] for s in below)}

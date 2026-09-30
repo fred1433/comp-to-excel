@@ -58,6 +58,49 @@ def test_county_facts_and_derived_area(county):
     checked = check_all(county["facts"], Registry([county_layer(county)]))
     assert all(f["status"] == "verified" for f in checked)
     area = next(f for f in checked if f["meaning_code"] == "gross_building_area")
-    assert area["value"] == "7354" and area["derived_from"]["operands"] == [2674, 2674, 2006]
+    assert area["value"] == "7354" and [o["value"] for o in area["derived_from"]["operands"]] == [2674, 2674, 2006]
     bad = dict(area, value="9998")
     assert check_fact(bad, Registry([county_layer(county)]))[0] == "rejected"
+
+
+# Counterexamples from the ChatGPT 6 Pro review: each must be rejected.
+def test_asking_price_with_a_sold_label_from_another_row(cited_lines):
+    f = {"doc": "mls-cb", "meaning_code": "sold_price", "meaning": "x", "value": "499000",
+         "span_ids": ["mls-cb:p3:l32", "mls-cb:p3:l28"], "quote": "$499,000"}
+    assert check_fact(f, Registry(cited_lines))[0] == "rejected"
+
+
+def test_lot_area_as_building_area(cited_lines):
+    f = {"doc": "mls-cb", "meaning_code": "gross_building_area", "meaning": "x", "value": "13503",
+         "span_ids": ["mls-cb:p1:l28"], "quote": "Lot Size (Sq. Ft.): 13,503"}
+    assert check_fact(f, Registry(cited_lines))[0] == "rejected"
+
+
+def test_a_duration_is_not_a_price(cited_lines):
+    f = {"doc": "minutes", "meaning_code": "accepted_offer_price", "meaning": "x", "value": "30",
+         "span_ids": ["minutes:p3:l23", "minutes:p3:l24"], "quote": "closing in 30 days"}
+    status, reason = check_fact(f, Registry(cited_lines))
+    assert status == "rejected" and "amount of money" in reason
+
+
+def test_negation_is_never_dropped(cited_lines):
+    f = {"doc": "minutes", "meaning_code": "sale_condition", "meaning": "x",
+         "value": "contingencies, closing in 30 days or as soon as possible",
+         "span_ids": ["minutes:p3:l24"], "quote": "with no contingencies and closing in 30 days or as soon as possible"}
+    status, reason = check_fact(f, Registry(cited_lines))
+    assert status == "rejected" and "negation" in reason
+
+
+def test_a_derived_operand_cannot_be_reused(county):
+    reg = Registry([county_layer(county)])
+    area = next(f for f in county["facts"] if f["meaning_code"] == "gross_building_area")
+    reused = dict(area, value="8022", derived_from={"op": "sum", "operands": [{"label": "floor 1", "value": 2674}] * 3})
+    assert check_fact(reused, reg) == ("rejected", "an operand field is used more than once")
+    bare = dict(area, value="8022", derived_from={"op": "sum", "operands": [2674, 2674, 2674]})
+    assert check_fact(bare, reg)[0] == "rejected"
+
+
+def test_a_county_field_only_holds_its_own_meaning(county):
+    reg = Registry([county_layer(county)])
+    owner = next(f for f in county["facts"] if f["meaning_code"] == "current_owner")
+    assert check_fact(dict(owner, meaning_code="buyer"), reg)[0] == "rejected"

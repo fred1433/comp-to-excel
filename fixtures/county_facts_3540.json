@@ -45,7 +45,7 @@
   },
   {
    "doc": "county",
-   "meaning_code": "buyer",
+   "meaning_code": "current_owner",
    "meaning": "current owner of record (OWN1), not read from the deed",
    "value": "MOLNAR HOLDINGS LLC",
    "span_ids": [
@@ -116,7 +116,7 @@
   {
    "doc": "county",
    "meaning_code": "gross_building_area",
-   "meaning": "above-grade area, sum of assessor floor lines 1 to 3",
+   "meaning": "sum of the assessor's floor lines 1 to 3",
    "value": "7354",
    "span_ids": [
     "county:81532611565915:AREA"
@@ -124,9 +124,18 @@
    "derived_from": {
     "op": "sum",
     "operands": [
-     2674,
-     2674,
-     2006
+     {
+      "label": "floor 1",
+      "value": 2674
+     },
+     {
+      "label": "floor 2",
+      "value": 2674
+     },
+     {
+      "label": "floor 3",
+      "value": 2006
+     }
     ]
    },
    "quote": "AREA by floor (sq ft) = lower level 1876, lower level 768, floor 1 2674, floor 2 2674, floor 3 2006"

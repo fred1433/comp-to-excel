@@ -1,21 +1,21 @@
 {
- "started_at": "2026-09-30T16:04:33+00:00",
+ "started_at": "2026-09-30T17:36:58+00:00",
  "files": {
   "template": {
    "path": "workbooks/template.xlsx",
-   "sha256": "3baf3b99e3fa1f27f848e1cc0d2f2d663153f9a709ea039a479e9df58f343fa3"
+   "sha256": "af8caaac9117b099b893c9be2656f2195b5cb9803a02d6ec2c20a22c5966fc98"
   },
   "delivered": {
    "path": "workbooks/comparable-1-entered.xlsx",
-   "sha256": "4e41ec1a842765acfa29c3a81baeea20165b031f6d8009523a9bbf21f778b964"
+   "sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed"
   },
   "test_copy": {
    "path": "workbooks/formula-check-test-inputs.xlsx",
-   "sha256": "8d8d2bc902e0ff5130ecc37c25019a3511915aa7787e79df40708e92b700cf25",
+   "sha256": "61c65613bfbe2f3de2085a7f1144f53c0ab3856f4674c1cad27701d3cc3343d8",
    "note": "test inputs typed by us to exercise the formulas; not an appraisal, not delivered"
   }
  },
- "destination": "Sales Comparison!D5:D17 (Comparable 1)",
+ "destination": "Sales Comparison!D5:D9, D11:D22 (Comparable 1)",
  "steps": [
   {
    "n": 1,
@@ -33,7 +33,7 @@
    "step": "ingest",
    "outcome": "stored",
    "doc": "county",
-   "file_sha256": "69e45614f90c1e27b5638983eef28264acf8977cc6299ae87bdb6e8e924c0aed",
+   "file_sha256": "b046e39d759f08895f523bbd728f8658beb088a53f1b6622565e7ecc596cf06a",
    "text_source": "county open-data record"
   },
   {
@@ -90,7 +90,7 @@
      "meaning_code": "sold_price",
      "value": "390000",
      "quote": "$390,000",
-     "reason": "nothing on or beside the cited line says this is a sold price"
+     "reason": "the line that holds the value does not label it as a sold price"
     },
     {
      "id": 43,
@@ -243,7 +243,7 @@
      "corroboration": [
       13
      ],
-     "rule": "county sale price on the recorded instrument; the MLS sold price agrees; the council's accepted offer, 29 days earlier, corroborates"
+     "rule": "county assessment record's sale-price field; the record lists instrument 2025031513. The MLS sold price agrees; the council's accepted offer, 29 days earlier, corroborates"
     },
     "gba_sf": {
      "value": null,
@@ -315,14 +315,14 @@
       17,
       14
      ],
-     "rule": "council minutes: the borough's council voted the sale of its old borough hall"
+     "rule": "seller as reported in the council minutes, which record the vote to sell the old borough hall; the deed was not read"
     },
     "grantee": {
-     "value": "Molnar Holdings LLC (current owner per county record, not read from the deed)",
+     "value": "Molnar Holdings LLC; buyer not read from the deed",
      "facts": [
       5
      ],
-     "rule": "county owner of record today; the deed was not retrieved"
+     "rule": "current owner on the county record today; the deed, and so the buyer of record, was not retrieved"
     },
     "property_rights": {
      "value": "Fee Simple, per the MLS Ownership field; not verified",
@@ -388,9 +388,9 @@
    "step": "approve",
    "outcome": "approved_for_demo_entry",
    "approved_by": "demo operator (Frederic de Lavenne de Choulot), not an appraiser",
-   "version_sha256": "4f76a49473ba4a804ffc7884ffb1fa971d6cdc5d8a48c05ed3ef9990e7099f1d",
-   "template_sha256": "3baf3b99e3fa1f27f848e1cc0d2f2d663153f9a709ea039a479e9df58f343fa3",
-   "destination": "Sales Comparison!D5:D17 (Comparable 1)",
+   "version_sha256": "4f46efee15cde41f579a130a11e908beac1306679ef4eaeaa66b9d5bbed23477",
+   "template_sha256": "af8caaac9117b099b893c9be2656f2195b5cb9803a02d6ec2c20a22c5966fc98",
+   "destination": "Sales Comparison!D5:D9, D11:D22 (Comparable 1)",
    "appraiser_verification": "pending"
   },
   {
@@ -407,24 +407,34 @@
    "outcome": "worker_stopped_after_save",
    "note": "simulated: the workbook was saved, the completion was never recorded",
    "file_exists": true,
-   "file_sha256": "4e41ec1a842765acfa29c3a81baeea20165b031f6d8009523a9bbf21f778b964"
+   "file_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed"
   },
   {
    "n": 21,
    "step": "write",
-   "outcome": "resumed_without_rewrite",
-   "op_id": "980a8403-ccf5-40ad-be31-c87a8f5cf17c",
-   "output_sha256": "4e41ec1a842765acfa29c3a81baeea20165b031f6d8009523a9bbf21f778b964"
+   "outcome": "conflict_not_overwritten",
+   "what": "output file changed since the save (6,000 typed into D10), worker resumes",
+   "found_sha256": "0f35d1b5b53fc0d925a2733c6d587b683de7428f94653817858f9d9b04aa3d66",
+   "expected_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed",
+   "d10_after": 6000.0
   },
   {
    "n": 22,
    "step": "write",
-   "outcome": "already_written",
-   "what": "the same approval run again",
-   "output_sha256": "4e41ec1a842765acfa29c3a81baeea20165b031f6d8009523a9bbf21f778b964"
+   "outcome": "resumed_regenerated",
+   "what": "operator set the changed file aside; worker resumes with no file",
+   "op_id": "72d10ae8-ba1c-461a-bb78-14990868f6c0",
+   "output_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed"
   },
   {
    "n": 23,
+   "step": "write",
+   "outcome": "already_written_file_verified",
+   "what": "the same approval run again: the receipt is checked against the file",
+   "output_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed"
+  },
+  {
+   "n": 24,
    "step": "write",
    "outcome": "operations",
    "rows": [
@@ -435,7 +445,7 @@
    ]
   },
   {
-   "n": 24,
+   "n": 25,
    "step": "audit",
    "outcome": "append_only_for_tested_application_roles",
    "refusals": [
@@ -507,7 +517,7 @@
    "owner_edit_detected_at_rows": [
     3
    ],
-   "rows": 24
+   "rows": 26
   }
  ],
  "facts": [
@@ -574,7 +584,7 @@
   {
    "id": 5,
    "doc": "county",
-   "meaning_code": "buyer",
+   "meaning_code": "current_owner",
    "meaning": "current owner of record (OWN1), not read from the deed",
    "value": "MOLNAR HOLDINGS LLC",
    "quote": "OWN1 (Owner Info 1) = MOLNAR HOLDINGS LLC",
@@ -680,7 +690,7 @@
    "id": 12,
    "doc": "county",
    "meaning_code": "gross_building_area",
-   "meaning": "above-grade area, sum of assessor floor lines 1 to 3",
+   "meaning": "sum of the assessor's floor lines 1 to 3",
    "value": "7354",
    "quote": "AREA by floor (sq ft) = lower level 1876, lower level 768, floor 1 2674, floor 2 2674, floor 3 2006",
    "span_ids": [
@@ -692,9 +702,18 @@
    "derived_from": {
     "op": "sum",
     "operands": [
-     2674,
-     2674,
-     2006
+     {
+      "label": "floor 1",
+      "value": 2674
+     },
+     {
+      "label": "floor 2",
+      "value": 2674
+     },
+     {
+      "label": "floor 3",
+      "value": 2006
+     }
     ]
    }
   },
@@ -1119,7 +1138,7 @@
     "mls-coalition:p1:l6"
    ],
    "status": "rejected",
-   "reason": "nothing on or beside the cited line says this is a sold price",
+   "reason": "the line that holds the value does not label it as a sold price",
    "scope": "transaction",
    "derived_from": null
   },
@@ -1312,8 +1331,8 @@
     },
     {
      "part": "xl/sharedStrings.xml",
-     "before": "036e46ae8222956700aa2862131fc42187d88c10a442d6239f6808fa39bb6130",
-     "after": "036e46ae8222956700aa2862131fc42187d88c10a442d6239f6808fa39bb6130",
+     "before": "fda2a9dbbd0a2abf2f289b2c759309dec69fa5298f89551c32cec927d4c72ad9",
+     "after": "fda2a9dbbd0a2abf2f289b2c759309dec69fa5298f89551c32cec927d4c72ad9",
      "identical": true
     },
     {
@@ -1337,7 +1356,7 @@
     {
      "part": "xl/worksheets/sheet1.xml",
      "before": "2654d8c185f0871e3ae9238e0eb53d73e71648188e373f1861406ea7b2d4500f",
-     "after": "b8d90d3ddc7902eba4813655ee5eb8ce7795c4a80c30df746c43ce56519fc7c1",
+     "after": "41ec1416523d283ee3bcccd874d53296df7dcb00a5d27a20fda314cf6e309b9b",
      "identical": false
     },
     {
@@ -1371,7 +1390,7 @@
   },
   "manifest": {
    "before": {
-    "protected_sha256": "b0b5a7164a23003086e70142e95436e1171475c8b1fe3ee11caa0abaf5fa779f",
+    "protected_sha256": "9ce103e21de0198d2b91934e8b9477820423bf8529f0f87ab25fc9c90124d9db",
     "formulas_and_names_sha256": "2d5b7a29ae5c9ba2a81b04c04a03092a07fa42bb69e5e7fd60acee02ad27f4ae",
     "counts": {
      "formulas": 36,
@@ -1383,7 +1402,7 @@
     }
    },
    "after": {
-    "protected_sha256": "b0b5a7164a23003086e70142e95436e1171475c8b1fe3ee11caa0abaf5fa779f",
+    "protected_sha256": "9ce103e21de0198d2b91934e8b9477820423bf8529f0f87ab25fc9c90124d9db",
     "formulas_and_names_sha256": "2d5b7a29ae5c9ba2a81b04c04a03092a07fa42bb69e5e7fd60acee02ad27f4ae",
     "counts": {
      "formulas": 36,
@@ -1417,7 +1436,7 @@
    ],
    "manifest_detected": true,
    "part_diff_detected": true,
-   "hash_after": "b122cc23c46d7012b3d5260795d00ce912f116badcdeeeb2fdb835cd1c6afd40",
+   "hash_after": "4df067fb4bd9212792336124bbf41f1df54f93481a419e4b509814d3901c14c7",
    "passed": true
   },
   {
@@ -1431,7 +1450,7 @@
    ],
    "manifest_detected": true,
    "part_diff_detected": true,
-   "hash_after": "75fe1341fa38e4a2c4c844db40f97c85588ac7c8517e78b4e79bcce29212f61a",
+   "hash_after": "400561d9d2ffb841bee9047310323dffc9b932d5d96b0179494a780f75c37c2f",
    "passed": true
   },
   {
@@ -1445,7 +1464,7 @@
    ],
    "manifest_detected": true,
    "part_diff_detected": true,
-   "hash_after": "0ed1cbe397b4346d22b740c328a62e61e7119b566fa6b3730588719499469ecf",
+   "hash_after": "a1e517328d2af48be6040abef7d58e6cd86e17198f043e2bbf84a070c3a9ceec",
    "passed": true
   },
   {
@@ -1458,7 +1477,7 @@
    ],
    "manifest_detected": true,
    "part_diff_detected": false,
-   "hash_after": "b0b5a7164a23003086e70142e95436e1171475c8b1fe3ee11caa0abaf5fa779f",
+   "hash_after": "9ce103e21de0198d2b91934e8b9477820423bf8529f0f87ab25fc9c90124d9db",
    "passed": true
   },
   {
@@ -1472,7 +1491,7 @@
    ],
    "manifest_detected": true,
    "part_diff_detected": true,
-   "hash_after": "200ddb2f003de3369d99efa6e388f5bf3b02670271ccb1aab8dbb275b2e835c6",
+   "hash_after": "ef88ad197651027935c5884d07aca920273bb5b2c03e7898b29fdeed84d1fdeb",
    "passed": true
   }
  ],
@@ -1506,7 +1525,7 @@
   "delivered": {
    "application": "Microsoft Excel for Mac",
    "version": "16.113.3",
-   "workbook_sha256": "4e41ec1a842765acfa29c3a81baeea20165b031f6d8009523a9bbf21f778b964",
+   "workbook_sha256": "2bb716eb1ceca66f333634f9f3f9121756afff40c9e649eb7d81a9d7697bbfed",
    "recalculation": "calculate full",
    "saved": false,
    "cells": {
@@ -1560,7 +1579,7 @@
   "test_copy": {
    "application": "Microsoft Excel for Mac",
    "version": "16.113.3",
-   "workbook_sha256": "8d8d2bc902e0ff5130ecc37c25019a3511915aa7787e79df40708e92b700cf25",
+   "workbook_sha256": "61c65613bfbe2f3de2085a7f1144f53c0ab3856f4674c1cad27701d3cc3343d8",
    "recalculation": "calculate full",
    "saved": false,
    "cells": {

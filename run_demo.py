@@ -146,11 +146,22 @@ def main(use_excel: bool = True, run_dir: Path = ROOT / "run", wb_dir: Path = RO
         except SystemExit:
             run.step("write", "worker_stopped_after_save", note="simulated: the workbook was saved, the completion was never recorded",
                      file_exists=DELIVERED.exists(), file_sha256=acceptance.sha256_file(DELIVERED))
+        # someone types an area into the saved file before the worker comes back
+        typed = tmp / "typed.xlsx"
+        writer.patch(DELIVERED, typed, SHEET, {f"D{GBA}": 6000.0}, {f"D{GBA}"})
+        shutil.move(typed, DELIVERED)
         r = run.write(DELIVERED)
-        run.step("write", r["outcome"], op_id=r.get("op_id"), output_sha256=r.get("output_sha256"))
+        import openpyxl
+        d10 = openpyxl.load_workbook(DELIVERED)[SHEET][f"D{GBA}"].value
+        run.step("write", r["outcome"], what=f"output file changed since the save (6,000 typed into D{GBA}), worker resumes",
+                 found_sha256=r.get("found_sha256"), expected_sha256=r.get("expected_sha256"), d10_after=d10)
+        shutil.move(DELIVERED, tmp / "set-aside-by-operator.xlsx")
+        r = run.write(DELIVERED)
+        run.step("write", r["outcome"], what="operator set the changed file aside; worker resumes with no file",
+                 op_id=r.get("op_id"), output_sha256=r.get("output_sha256"))
         verification = r["verification"]
         r2 = run.write(DELIVERED)
-        run.step("write", r2["outcome"], what="the same approval run again", output_sha256=r2.get("output_sha256"))
+        run.step("write", r2["outcome"], what="the same approval run again: the receipt is checked against the file", output_sha256=r2.get("output_sha256"))
 
         with pg.connect() as c:
             ops = c.execute("select status, count(*) from comp.write_operation group by status").fetchall()

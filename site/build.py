@@ -55,7 +55,8 @@ FIELDS = [
 sheet = []
 for key, label, cell, fmt in FIELDS:
     e = entry[key]
-    ev = [evidence(i) for i in e["facts"]]
+    cid = e.get("conflict", {}).get("fact")
+    ev = [evidence(i) for i in e["facts"] if i != cid]
     if "conflict" in e:
         ev.append(evidence(e["conflict"]["fact"], "conflict"))
     sheet.append({"key": key, "label": label, "cell": cell, "display": fmt(e["value"]), "rule": e["rule"], "evidence": ev,
@@ -129,3 +130,4 @@ print("built", DIST / "index.html", len(html), "bytes")
 PUBLIC = ROOT / "site/public"
 shutil.rmtree(PUBLIC, ignore_errors=True)
 shutil.copytree(DIST, PUBLIC / "comp-to-excel")
+(PUBLIC / "_headers").write_text("/comp-to-excel/*\n  X-Robots-Tag: noindex, nofollow\n")

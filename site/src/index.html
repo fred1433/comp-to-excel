@@ -260,7 +260,7 @@ function lines(spans) {
   const n = spans.map((s) => +s.split(":l")[1]);
   return n.length === 1 ? "line " + n[0] : "lines " + n[0] + " to " + n[n.length - 1];
 }
-const num = (v) => (/^\d+(\.\d+)?$/.test(v) && v.length > 3 && !/^(19|20)\d\d$/.test(v) && v.length < 9 ? Number(v).toLocaleString("en-US") : v);
+const num = (v) => (/^\d{5,8}$/.test(v) ? Number(v).toLocaleString("en-US") : v);
 
 function sourceLine(e) {
   const doc = D.docs[e.doc];

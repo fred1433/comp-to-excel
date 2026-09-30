@@ -35,7 +35,7 @@ Needs Python 3.12 and PostgreSQL 14 or later (`initdb` and `pg_ctl` on the PATH;
 in a temporary directory and stopped afterwards). No API key, no network.
 
     python3.12 -m venv .venv && .venv/bin/pip install -r requirements.txt
-    .venv/bin/python -m pytest -q          # 28 tests
+    .venv/bin/python -m pytest -q          # 37 tests
     .venv/bin/python run_demo.py --no-excel  # the whole run; writes run/ and workbooks/
 
 `run/run.json` and `run/audit.jsonl` are the recorded run shown on the page (with the Excel for Mac observation).

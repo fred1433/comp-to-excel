@@ -357,7 +357,7 @@ function cellmapHTML(cell, appraiser) {
   const i = rows.findIndex((g) => g.row === row);
   const start = Math.min(Math.max(0, i - 1), rows.length - 3);
   const win = rows.slice(start, start + 3);
-  return `<div class="cellmap"><p class="cap">${appraiser ? "Left empty for the appraiser" : "Written to"} Sales Comparison!${cell}</p><table>
+  return `<div class="cellmap"><p class="cap">${appraiser ? "Left empty for the appraiser:" : "Written to"} Sales Comparison!${cell}</p><table>
     <thead><tr><th class="rn"></th><th>B</th><th>D, Comparable 1</th></tr></thead><tbody>${
     win.map((g) => `<tr><th class="rn">${g.row}</th><td class="b">${esc(g.label)}</td><td class="${g.kind === "fact" ? "fact" : g.kind === "appraiser" ? "appr" : ""}${g.row === row ? " hit" : ""}">${esc(g.value)}</td></tr>`).join("")
   }</tbody></table></div>`;

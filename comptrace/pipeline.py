@@ -37,6 +37,12 @@ def sha(obj) -> str:
     return hashlib.sha256(json.dumps(obj, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
 
 
+def county_sections(layers: dict) -> dict:
+    area = next(s["text"] for p in layers["county"]["pages"] for s in p["spans"] if s["id"].endswith(":AREA"))
+    below = sum(int(n) for n in re.findall(r"lower level (\d+)", area))
+    return {"below": below}
+
+
 def norm_address(s: str) -> str:
     s = s.upper().replace(".", " ").replace(",", " ")
     s = re.sub(r"\bSAINT\b", "ST", s)
@@ -183,7 +189,7 @@ class Run:
                 "address_matches_property": norm_address(label) in addrs,
                 "sold_price_equals_recorded_price": t[2] in prices,
                 "sold_date_equals_recorded_date": t[1] in dates,
-                "lot_number_is_parcel_suffix": any(p.endswith(l) for p in parcels for l in lots),
+                "lot_number_equals_last_4_digits_of_parcel_id_heuristic": any(p.endswith(l) for p in parcels for l in lots),
                 "carries_recorded_instrument": False,
             }
             if reasons["address_matches_property"] and reasons["sold_price_equals_recorded_price"] and reasons["sold_date_equals_recorded_date"]:
@@ -251,6 +257,11 @@ class Run:
         k_gba = pick("mls-coalition", "gross_building_area")
         n_offer = pick("minutes", "accepted_offer_price")
         n_cond = pick("minutes", "sale_condition")
+        n_seller = pick("minutes", "seller")
+        n_hall = pick("minutes", "address")
+        c_owner = pick("county", "buyer")
+        m_stories = pick("mls-cb", "stories")
+        c_sections = county_sections(self.layers)
         acres_total = round(sum(float(f["value"]) for f in c_acres), 2)
         ids = lambda *fs: [f["id"] for f in fs]
         us = lambda iso: f"{int(iso[5:7])}/{int(iso[8:10])}/{iso[:4]}"
@@ -259,22 +270,34 @@ class Run:
                         "rule": "county site address; the recorded instrument conveys two parcels"},
             "parcels": {"value": "; ".join(f["value"] for f in c_parcels), "facts": ids(*c_parcels), "rule": "parcels on the recorded instrument"},
             "instrument": {"value": c_instr["value"], "facts": ids(c_instr), "rule": "county instrument number"},
-            "sale_date": {"value": c_date["value"], "facts": ids(c_date, m_date), "rule": "county sale date; MLS agrees"},
-            "sale_price": {"value": float(c_price["value"]), "facts": ids(c_price, m_price, n_offer),
-                           "rule": "county sale price; MLS sold price and the council's accepted offer agree"},
-            "gba_sf": {"value": float(c_gba["value"]), "facts": ids(c_gba, k_gba), "rule": "county assessor above-grade area preferred over listing figures",
-                       "conflict": {"value": float(k_gba["value"]), "fact": k_gba["id"], "note": "a listing site shows 6,000 sq ft"}},
+            "sale_date": {"value": c_date["value"], "facts": ids(c_date, m_date),
+                          "rule": "county 'Sale Date' field, which does not say whether it is the deed or the recording date; the MLS sold date agrees"},
+            "sale_price": {"value": float(c_price["value"]), "facts": ids(c_price, m_price), "corroboration": ids(n_offer),
+                           "rule": "county sale price on the recorded instrument; the MLS sold price agrees; the council's accepted offer, 29 days earlier, corroborates"},
+            "gba_sf": {"value": None, "facts": ids(c_gba, k_gba), "status": "appraiser to choose",
+                       "choices": [{"basis": "county assessor, floor lines 1 to 3", "sf": float(c_gba["value"]), "fact": c_gba["id"]},
+                                   {"basis": "listing site", "sf": float(k_gba["value"]), "fact": k_gba["id"]}],
+                       "rule": "sources disagree on the area, so the cell is left for the appraiser; no price per sq ft exists until then"},
+            "gba_reported": {"value": (f"County assessor: {float(c_gba['value']):,.0f} sq ft on floor lines 1 to 3, plus {c_sections['below']:,} on lower-level lines B1. "
+                                       f"Listing site: {float(k_gba['value']):,.0f} sq ft. MLS: {m_stories['value']} stories."),
+                             "facts": ids(c_gba, k_gba, m_stories), "rule": "every reported area with its source and scope"},
             "land_acres": {"value": acres_total, "facts": ids(*c_acres, m_lot), "rule": "sum of the parcels on the recorded instrument",
                            "conflict": {"value": float(m_lot["value"]), "fact": m_lot["id"], "note": "the MLS lot size covers the front parcel only"}},
             "year_built": {"value": float(c_year["value"]), "facts": ids(c_year, m_year), "rule": "county record preferred over an MLS estimate",
-                           "conflict": {"value": float(m_year["value"]), "fact": m_year["id"], "note": "MLS year built is marked estimated"}},
+                           "conflict": {"value": float(m_year["value"]), "fact": m_year["id"], "note": "MLS shows 1900, with Year Built Source: Estimated on the next line"}},
             "zoning": {"value": m_zoning["value"].replace("AND", "and"), "facts": ids(m_zoning), "rule": "MLS, only source"},
-            "property_rights": {"value": f"{m_rights['value']} (reported by MLS)", "facts": ids(m_rights), "rule": "reported, not verified"},
-            "sale_conditions": {"value": (f"Offer accepted by the borough council with {n_cond['value'].split(',')[0]} and "
-                                          f"{n_cond['value'].split(', ', 1)[1]} (minutes of 9/11/2025). Listed at ${float(m_ask[0]['value']):,.0f} "
-                                          f"on {us(m_list_date['value'])}, reduced to ${float(m_ask[1]['value']):,.0f} on {us(m_change_date['value'])}. "
-                                          f"Excluded: {m_excl['value'].lower()}."),
-                                "facts": ids(n_cond, m_ask[0], m_list_date, m_ask[1], m_change_date, m_excl), "rule": "reported facts, no verdict on arm's length"},
+            "grantor": {"value": "St. Lawrence Borough; the property is the former borough hall", "facts": ids(n_seller, n_hall),
+                        "rule": "council minutes: the borough's council voted the sale of its old borough hall"},
+            "grantee": {"value": f"{c_owner['value'].title().replace('Llc', 'LLC')} (current owner per county record, not read from the deed)",
+                        "facts": ids(c_owner), "rule": "county owner of record today; the deed was not retrieved"},
+            "property_rights": {"value": f"{m_rights['value']}, per the MLS Ownership field; not verified", "facts": ids(m_rights),
+                                "rule": "reported, not verified"},
+            "sale_conditions": {"value": f"No contingencies; closing in 30 days or as soon as possible (council motion, 9/11/2025)",
+                                "facts": ids(n_cond), "rule": "the conditions stated in the accepted offer; no verdict on arm's length"},
+            "marketing": {"value": (f"Listed at ${float(m_ask[0]['value']):,.0f} on {us(m_list_date['value'])}; reduced to "
+                                    f"${float(m_ask[1]['value']):,.0f} on {us(m_change_date['value'])}; sold on {us(m_date['value'])} (MLS history)"),
+                          "facts": ids(m_ask[0], m_list_date, m_ask[1], m_change_date, m_date), "rule": "MLS price history"},
+            "non_realty": {"value": f"Excluded from the sale: {m_excl['value'].lower()} (MLS)", "facts": ids(m_excl), "rule": "reported, not verified"},
             "sources": {"value": "Berks County assessment record (open data, retrieved 9/30/2026); St. Lawrence Borough Council minutes, 9/11/2025; MLS PABK2052516 on two listing sites",
                         "facts": [], "rule": "documents behind the facts above"},
             "verification": {"value": "Public records reviewed; no transaction-party verification performed", "facts": [], "rule": "state of verification"},
@@ -287,7 +310,8 @@ class Run:
                             (self.t1, Jsonb(entry), sha(entry))).fetchone()[0]
         # evidence check: every fact behind the entry must be verified in the database
         with self.conn("comp_reviewer") as c:
-            used = sorted({i for e in entry.values() for i in e["facts"]} | {e["conflict"]["fact"] for e in entry.values() if "conflict" in e})
+            used = sorted({i for e in entry.values() for i in e["facts"] + e.get("corroboration", [])}
+                          | {e["conflict"]["fact"] for e in entry.values() if "conflict" in e})
             bad = c.execute("select id from comp.fact where id = any(%s) and check_status <> 'verified'", (used,)).fetchall()
             status = "evidence_checked" if not bad else "extracted"
             c.execute("update comp.comp_record set status = %s where id = %s", (status, cid))
@@ -302,7 +326,7 @@ class Run:
 
     def version(self, conn, comp_id: int, destination: str) -> tuple[str, dict]:
         entry = conn.execute("select entry from comp.comp_record where id = %s", (comp_id,)).fetchone()[0]
-        ids = sorted({i for e in entry.values() for i in e["facts"]})
+        ids = sorted({i for e in entry.values() for i in e["facts"] + e.get("corroboration", [])})
         evidence = conn.execute(
             "select f.id, f.doc, f.value, f.quote, f.span_ids, d.file_sha256, d.layer_sha256 from comp.fact f join comp.source_document d using (doc) "
             "where f.id = any(%s) order by f.id", (ids,)).fetchall()
@@ -359,8 +383,7 @@ class Run:
     def _verify_output(self, output: Path, writes: dict, m: dict) -> dict:
         allowed = set(m.values())
         pdiff = acceptance.part_diff(self.template, output, writer.sheet_part(self.template, SHEET), allowed)
-        expected_inputs = {f"{SHEET}!{cell}": (None if val is None else (f"{val} 00:00:00" if isinstance(val, date) else str(val)))
-                           for cell, val in writes.items()}
+        expected_inputs = {f"{SHEET}!{cell}": acceptance.expected(val) for cell, val in writes.items()}
         acc = acceptance.check(self.template, output, {SHEET: allowed}, expected_inputs)
         return {"part_diff": pdiff, "acceptance": acc, "ok": pdiff["ok"] and acc["ok"]}
 
@@ -407,11 +430,11 @@ class Run:
         """Edit one value after approval, try to write, then put it back."""
         with self.conn("comp_reviewer") as c:
             entry = c.execute("select entry from comp.comp_record where id = %s", (self.comp_id,)).fetchone()[0]
-            original = entry["gba_sf"]["value"]
-            entry["gba_sf"]["value"] = 6000.0
+            original = entry["sale_price"]["value"]
+            entry["sale_price"]["value"] = 391000.0
             c.execute("update comp.comp_record set entry = %s where id = %s", (Jsonb(entry), self.comp_id))
         r = self.write(output)
         with self.conn("comp_reviewer") as c:
-            entry["gba_sf"]["value"] = original
+            entry["sale_price"]["value"] = original
             c.execute("update comp.comp_record set entry = %s where id = %s", (Jsonb(entry), self.comp_id))
-        self.step("write", r["outcome"], what="building area changed to 6,000 after approval", reason=r.get("reason"), file_created=output.exists())
+        self.step("write", r["outcome"], what="sale price changed to 391,000 after approval", reason=r.get("reason"), file_created=output.exists())

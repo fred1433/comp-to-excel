@@ -52,14 +52,14 @@ def facts_from_records(rec: dict) -> dict:
     facts = [
         {"doc": "county", "meaning_code": "sold_price", "meaning": "sale price on the assessment record",
          "value": str(m["PRICE"]), "span_ids": [sid("PRICE")], "quote": f"PRICE (Sale Price) = {m['PRICE']}"},
-        {"doc": "county", "meaning_code": "sale_date", "meaning": "sale date on the assessment record",
+        {"doc": "county", "meaning_code": "sale_date", "meaning": "county 'Sale Date' field (the record does not say whether this is the deed date or the recording date)",
          "value": local_date(m["SALEDT"]), "span_ids": [sid("SALEDT")], "quote": f"SALEDT (Sale Date) = {local_date(m['SALEDT'])}"},
         {"doc": "county", "meaning_code": "other", "meaning": "recorded instrument number",
          "value": m["INSTRUNO"], "span_ids": [sid("INSTRUNO")], "quote": f"INSTRUNO (Instrument Number) = {m['INSTRUNO']}"},
         {"doc": "county", "meaning_code": "address", "meaning": "site address on the assessment record",
          "value": f"{m['ADRNO']} {m['ADRSTR']} {m['ADRSUF']}", "span_ids": [sid("ADDRESS")],
          "quote": f"ADRNO/ADRSTR/ADRSUF (site address) = {m['ADRNO']} {m['ADRSTR']} {m['ADRSUF']}"},
-        {"doc": "county", "meaning_code": "buyer", "meaning": "owner of record after the sale",
+        {"doc": "county", "meaning_code": "buyer", "meaning": "current owner of record (OWN1), not read from the deed",
          "value": m["OWN1"], "span_ids": [sid("OWN1")], "quote": f"OWN1 (Owner Info 1) = {m['OWN1']}"},
     ]
     for p in rec["same_instrument"]:
@@ -74,7 +74,7 @@ def facts_from_records(rec: dict) -> dict:
             facts.append({"doc": "county", "meaning_code": "year_built", "meaning": "year built on the commercial record",
                           "value": str(c["YRBLT"]), "span_ids": [sid("YRBLT")], "quote": f"YRBLT (Year Built) = {c['YRBLT']}"})
         if c.get("SALEYR1"):
-            facts.append({"doc": "county", "meaning_code": "sold_price", "meaning": f"earlier sale, {c['SALEYR1']}-{c['SALEMTH1']}",
+            facts.append({"doc": "county", "meaning_code": "sold_price", "meaning": f"earlier sale, {c['SALEYR1']}-{c['SALEMTH1']}, from the county sale history of this parcel (no instrument, no parties)",
                           "value": str(c["SALEPR1"]), "span_ids": [sid("SALEPR1")],
                           "quote": f"SALEPR1 (Sale Price 1) = {c['SALEPR1']}; SALEYR1/SALEMTH1 (Sale Year 1/Sale Month 1) = {c['SALEYR1']}/{c['SALEMTH1']}"})
         for i in range(1, 9):

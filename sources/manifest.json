@@ -9,7 +9,10 @@
    "also": "https://services3.arcgis.com/dGYe1jDYrTw1wwpc/arcgis/rest/services/Berks_Assessment_CAMA_Commercial_File/FeatureServer/13",
    "retrieved_at": "2026-09-30T12:53:34+00:00",
    "terms": "County of Berks GIS Data General Agreement and Terms: no redistribution in original format; derived products cite the county.",
-   "sha256": null
+   "sha256": "4d627196dfdccefd39dab686274913e991975d3f07f3f8be19678a7f43283dc3",
+   "sha256_note": "SHA-256 of the county JSON as retrieved (kept private under the county's terms)",
+   "derived_facts_sha256": "69e45614f90c1e27b5638983eef28264acf8977cc6299ae87bdb6e8e924c0aed",
+   "derived_facts_note": "the run's county document hash: SHA-256 of fixtures/county_facts_3540.json content, the cited fields formatted by us from the JSON"
   },
   "minutes": {
    "kind": "scanned PDF",

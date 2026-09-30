@@ -16,7 +16,7 @@
   {
    "doc": "county",
    "meaning_code": "sale_date",
-   "meaning": "sale date on the assessment record",
+   "meaning": "county 'Sale Date' field (the record does not say whether this is the deed date or the recording date)",
    "value": "2025-10-10",
    "span_ids": [
     "county:81532611565915:SALEDT"
@@ -46,7 +46,7 @@
   {
    "doc": "county",
    "meaning_code": "buyer",
-   "meaning": "owner of record after the sale",
+   "meaning": "current owner of record (OWN1), not read from the deed",
    "value": "MOLNAR HOLDINGS LLC",
    "span_ids": [
     "county:81532611565915:OWN1"
@@ -106,7 +106,7 @@
   {
    "doc": "county",
    "meaning_code": "sold_price",
-   "meaning": "earlier sale, 1997-08",
+   "meaning": "earlier sale, 1997-08, from the county sale history of this parcel (no instrument, no parties)",
    "value": "160000",
    "span_ids": [
     "county:81532611565915:SALEPR1"

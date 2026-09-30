@@ -37,6 +37,13 @@ def _cells(xml: bytes) -> dict[str, bytes]:
     return {m.group(1).decode(): m.group(0) for m in _CELL.finditer(xml)}
 
 
+_ROW = re.compile(rb"<row [^>]*>")
+
+
+def _row_tags(xml: bytes) -> list[bytes]:
+    return _ROW.findall(xml)
+
+
 def _outside_sheetdata(xml: bytes) -> bytes:
     return re.sub(rb"<sheetData>.*</sheetData>", b"<sheetData/>", xml, flags=re.S)
 
@@ -60,6 +67,8 @@ def part_diff(template: Path, patched: Path, sheet_part: str, approved_cells: se
         problems.append("part order or part list changed")
     if _outside_sheetdata(xa) != _outside_sheetdata(xb):
         problems.append(f"{sheet_part} changed outside its cell data")
+    if _row_tags(xa) != _row_tags(xb):
+        problems.append(f"{sheet_part}: row attributes changed (height, hidden, outline or style)")
     for r in changed:
         if r not in approved_cells:
             problems.append(f"cell {r} changed but is not an approved input")
@@ -93,7 +102,7 @@ def manifest(path: Path, input_cells: dict[str, set[str]]) -> dict:
                 elif isinstance(v, str) and v.startswith("="):
                     formulas[ref] = v
                 elif ref in guarded:
-                    inputs[f"{ws.title}!{ref}"] = None if v is None else str(v)
+                    inputs[f"{ws.title}!{ref}"] = None if v is None else typed(v)
                 elif v is not None:
                     constants[ref] = [type(v).__name__, str(v)]
                 if c.has_style:
@@ -111,6 +120,10 @@ def manifest(path: Path, input_cells: dict[str, set[str]]) -> dict:
             "conditional_formats": sorted(cf), "data_validations": sorted(dv),
             "merged": sorted(str(m) for m in ws.merged_cells.ranges), "freeze": ws.freeze_panes,
             "names": {n: d.attr_text for n, d in ws.defined_names.items()},
+            "rows": {str(r): [bool(d.hidden), d.height, d.outlineLevel, bool(d.customHeight)]
+                     for r, d in ws.row_dimensions.items() if d.hidden or d.height is not None or d.outlineLevel},
+            "columns": {k: [bool(d.hidden), d.width, d.outlineLevel] for k, d in ws.column_dimensions.items()
+                        if d.hidden or d.customWidth or d.outlineLevel},
         }
     names = {n: {"refers_to": d.attr_text, "scope": d.localSheetId, "hidden": bool(d.hidden)} for n, d in wb.defined_names.items()}
     calc = wb.calculation
@@ -134,6 +147,28 @@ def manifest(path: Path, input_cells: dict[str, set[str]]) -> dict:
     }
 
 
+def typed(v) -> list:
+    """An input value with its cell type, so a number written as text is not the same input."""
+    from datetime import datetime
+    if isinstance(v, bool):
+        return ["bool", str(v)]
+    if isinstance(v, (int, float)):
+        return ["number", repr(float(v))]
+    if isinstance(v, datetime):
+        return ["date", v.isoformat()]
+    return ["text", str(v)]
+
+
+def expected(value) -> list | None:
+    """What an input cell should read back as, for a value the writer wrote."""
+    from datetime import date, datetime
+    if value is None:
+        return None
+    if isinstance(value, date) and not isinstance(value, datetime):
+        value = datetime(value.year, value.month, value.day)
+    return typed(value)
+
+
 def _walk_diff(a, b, path=""):
     if type(a) != type(b):
         return [f"{path}: {a!r} -> {b!r}"]
@@ -150,7 +185,7 @@ def _walk_diff(a, b, path=""):
     return [] if a == b else [f"{path}: {a!r} -> {b!r}"]
 
 
-def check(template: Path, candidate: Path, input_cells: dict[str, set[str]], expected_inputs: dict[str, str | None]) -> dict:
+def check(template: Path, candidate: Path, input_cells: dict[str, set[str]], expected_inputs: dict[str, list | None]) -> dict:
     before, after = manifest(template, input_cells), manifest(candidate, input_cells)
     problems = _walk_diff(before["protected"], after["protected"])
     for ref, want in expected_inputs.items():

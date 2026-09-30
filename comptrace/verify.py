@@ -22,7 +22,7 @@ MEANING_WORDS = {
     "asking_price": ["listed", "list price", "price reduced", "asking"],
     "price_per_sf_reported": ["per sq"],
     "sale_date": ["sold", "sale date"],
-    "offer_acceptance_date": ["offer"],
+    "offer_acceptance_date": ["offer", "meeting"],
     "listing_date": ["listed"],
     "price_change_date": ["reduced", "price change"],
     "gross_building_area": ["sq ft", "sqft", "sq. ft", "square feet"],
@@ -31,6 +31,7 @@ MEANING_WORDS = {
     "zoning": ["zoning"],
     "parcel_or_lot_id": ["lot number", "parcel", "tax id", "parid"],
     "property_rights": ["ownership", "fee simple", "leased fee", "leasehold"],
+    "sale_condition": ["contingenc", "closing in", "settlement", "financing", "as is", "concession", "seller will", "buyer will"],
 }
 MONTHS = {m: i for i, m in enumerate(["january", "february", "march", "april", "may", "june", "july", "august",
                                         "september", "october", "november", "december"], start=1)}
@@ -79,7 +80,7 @@ class Registry:
                     self.page_of[s["id"]] = p
 
     def context(self, span_ids: list[str]) -> str:
-        """Cited lines plus label neighbours: same visual row, or the line printed just under a cited value."""
+        """Cited lines plus label neighbours: same visual row, or the line printed just under or just over a cited value."""
         texts = []
         for sid in span_ids:
             s, page = self.spans[sid], self.page_of[sid]
@@ -93,8 +94,10 @@ class Registry:
                     continue
                 ox0, oy0, ox1, oy1 = o["bbox"]
                 same_row = abs((oy0 + oy1) / 2 - cy) < 4
-                label_below = 0 <= oy0 - y1 < 8 and min(x1, ox1) - max(x0, ox0) > 0
-                if same_row or label_below:
+                overlap = min(x1, ox1) - max(x0, ox0) > 0
+                label_below = 0 <= oy0 - y1 < 8 and overlap
+                label_above = 0 <= y0 - oy1 < 8 and overlap
+                if same_row or label_below or label_above:
                     texts.append(o["text"])
         return " ".join(texts)
 
@@ -140,7 +143,10 @@ def check_fact(fact: dict, reg: Registry) -> tuple[str, str | None]:
             return "rejected", f"the quote does not state the date {value}"
     else:
         q = quote.lower()
-        missing = [w for w in re.findall(r"[a-z0-9][a-z0-9\-\+/\.]*", value.lower()) if len(w) > 2 and w.strip(".") not in q]
+        # a word counts as present if the quote has it, or a word with the same first six letters (provides / providing)
+        qwords = re.findall(r"[a-z0-9][a-z0-9\-\+/\.]*", q)
+        present = lambda w: w in q or (len(w) > 6 and any(x[:6] == w[:6] for x in qwords))
+        missing = [w for w in re.findall(r"[a-z0-9][a-z0-9\-\+/\.]*", value.lower()) if len(w) > 2 and not present(w.strip("."))]
         if missing:
             return "rejected", "the value adds words the quote does not contain: " + ", ".join(missing[:4])
     return "verified", None
@@ -171,7 +177,8 @@ def excerpt(layers: list[dict], facts: list[dict]) -> list[dict]:
                 if not o.get("bbox"):
                     continue
                 ox0, oy0, ox1, oy1 = o["bbox"]
-                if abs((oy0 + oy1) / 2 - (y0 + y1) / 2) < 4 or (0 <= oy0 - y1 < 8 and min(x1, ox1) - max(x0, ox0) > 0):
+                ov = min(x1, ox1) - max(x0, ox0) > 0
+                if abs((oy0 + oy1) / 2 - (y0 + y1) / 2) < 4 or (0 <= oy0 - y1 < 8 and ov) or (0 <= y0 - oy1 < 8 and ov):
                     keep.add(o["id"])
     out = []
     for L in layers:

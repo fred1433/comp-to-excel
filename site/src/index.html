@@ -172,6 +172,10 @@ footer p { margin: 4px 0; }
 }
 
 /* report pass */
+.row.appr .pending { display: inline-block; background: var(--appr); padding: 0 8px; font-family: "Public Sans", sans-serif; font-size: 15px; }
+.choices { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 16px; }
+.choices div { background: var(--appr); padding: 10px 12px; font-size: 13.5px; color: #3d3a2f; }
+.choices .sf { display: block; font-family: var(--serif); font-size: 22px; font-weight: 600; color: var(--ink); font-feature-settings: "tnum" 1; }
 h1, .addr, .key .big, .panel h2, section.run h2, section.notes h2, .proof h3, .ev .who, .row .val, .next {
   font-family: var(--serif); font-feature-settings: "tnum" 1, "lnum" 1;
 }
@@ -282,8 +286,8 @@ ol.seq li { border-top-color: var(--rule); }
       <h2>Not shown here</h2>
       <ul>
         <li>Local-source demonstration; Microsoft tenant integration not demonstrated. The documents were read from a local folder.</li>
-        <li>Excel for Mac, not desktop Excel on a Windows 365 runner. The copy on this machine is not activated, so it recalculated the file and could not save it; the delivered file is the written file, with the same hash as the one Excel recalculated.</li>
-        <li>No party to the sale was contacted. The deed image was not retrieved; the instrument number comes from the county assessment record.</li>
+        <li>Excel for Mac 16.113, not desktop Excel on a Windows 365 runner. This machine has no active Microsoft 365 subscription, so Excel runs in read-only mode: it opened and recalculated the file but could not save it. The delivered file is the written file, with the same SHA-256 as the one Excel recalculated. Its formulas carry blank cached values, which is also their correct value until the appraiser picks a building area; Excel recalculates on open.</li>
+        <li>No party to the sale was contacted. The deed image was not retrieved: the instrument number, the sale date (deed or recording date, not stated) and the current owner come from the county assessment record.</li>
         <li>The grid is ours, built to stand in for a firm's model. Its adjustment convention is one of several in use.</li>
         <li>Word reports, a review queue and multi-agent quality control are left out.</li>
       </ul>
@@ -324,26 +328,28 @@ function evidenceHTML(e) {
   const cls = e.status === "rejected" ? "rejected" : (e.role === "conflict" ? "conflict" : "");
   let check;
   if (e.status === "rejected") check = `<p class="check no">Held back: ${esc(e.reason)}.</p>`;
-  else if (e.derived) check = `<p class="check ok">Checked: ${e.derived.operands.map((n) => n.toLocaleString("en-US")).join(" + ")} = ${Number(e.value).toLocaleString("en-US")}, each on the record.</p>`;
+  else if (e.doc === "county" && !e.derived) check = `<p class="check ok">Checked against the county field. This line is formatted by us from the county's JSON record; it is not a page quote.</p>`;
+  else if (e.derived) check = `<p class="check ok">Checked: ${e.derived.operands.map((n) => n.toLocaleString("en-US")).join(" + ")} = ${Number(e.value).toLocaleString("en-US")}, floor lines 1, 2 and 3 of the county record (formatted by us from its JSON). The county codes levels; it does not say "above grade".</p>`;
   else check = `<p class="check ok">Checked: quote found on the cited line; value ${esc(num(e.value))} is what it says.</p>`;
-  const lead = e.role === "conflict" ? `<p class="kind">Another source says otherwise:</p>` : "";
+  const lead = e.role === "conflict" ? `<p class="kind">Another source says otherwise:</p>` :
+    e.role === "corroboration" ? `<p class="kind">Corroborates, does not prove the sale: an accepted offer, 29 days before the recorded sale.</p>` : "";
   const media = e.img ? `<img src="${e.img}" alt="Scanned minutes, page ${e.page}, with the cited lines highlighted">` : "";
-  return `<div class="ev ${cls}">${lead}<div class="who">${esc(s.name)}</div><div class="kind">${esc(s.kind)}</div>${media}${e.img ? `<p class="kind">OCR text of the highlighted lines:</p>` : ""}<blockquote>${esc(e.quote)}</blockquote>${check}</div>`;
+  return `<div class="ev ${cls}">${lead}<div class="who">${esc(s.name)}</div><div class="kind">${esc(s.kind)}</div>${media}${e.img ? `<p class="kind">OCR text of the highlighted lines:</p>` : ""}<blockquote>${esc(e.quote)}${e.next ? `<br>${esc(e.next)}` : ""}</blockquote>${check}</div>`;
 }
 
 function cellmapHTML(cell) {
   const row = +cell.slice(1);
-  const rows = D.grid.filter((g) => g.row <= 17 || g.row === 20 || g.row === 21);
+  const rows = D.grid;
   const i = rows.findIndex((g) => g.row === row);
   const start = Math.min(Math.max(0, i - 1), rows.length - 3);
   const win = rows.slice(start, start + 3);
   return `<div class="cellmap"><p class="cap">Written to Sales Comparison!${cell}</p><table>
     <thead><tr><th class="rn"></th><th>B</th><th>D, Comparable 1</th></tr></thead><tbody>${
-    win.map((g) => `<tr><th class="rn">${g.row}</th><td class="b">${esc(g.label)}</td><td class="${g.kind === "fact" ? "fact" : ""}${g.row === row ? " hit" : ""}">${esc(g.value)}</td></tr>`).join("")
+    win.map((g) => `<tr><th class="rn">${g.row}</th><td class="b">${esc(g.label)}</td><td class="${g.kind === "fact" ? "fact" : g.kind === "appraiser" ? "appr" : ""}${g.row === row ? " hit" : ""}">${esc(g.value)}</td></tr>`).join("")
   }</tbody></table></div>`;
 }
 
-const rank = (e) => (e.role === "conflict" ? 9 : e.img ? 0 : e.doc === "county" ? 1 : 2);
+const rank = (e) => (e.role === "conflict" ? 9 : e.role === "corroboration" ? 5 : e.doc === "county" ? 0 : e.img ? 2 : 1);
 
 function show(kind, idx, btn) {
   document.querySelectorAll("[aria-pressed]").forEach((b) => b.setAttribute("aria-pressed", "false"));
@@ -351,8 +357,9 @@ function show(kind, idx, btn) {
   const p = $("#panel");
   if (kind === "row") {
     const f = D.sheet[idx];
+    const choices = f.choices ? `<div class="choices">${f.choices.map((c) => `<div><span class="sf">${c.sf.toLocaleString("en-US")} sq ft</span><span>${esc(c.basis)}</span></div>`).join("")}</div>` : "";
     p.innerHTML = `<p class="cap">${esc(f.label)}</p><h2>${esc(f.display.split("\n")[0])}${f.display.includes("\n") ? " and 1 more" : ""}</h2>
-      <p class="rule">Rule applied: ${esc(f.rule)}.</p>
+      <p class="rule">${f.appraiser ? "" : "Rule applied: "}${esc(f.rule[0].toUpperCase() + f.rule.slice(1))}.</p>${choices}
       ${cellmapHTML(f.cell)}
       ${f.evidence.length ? [...f.evidence].sort((a, b) => rank(a) - rank(b)).map(evidenceHTML).join("") : `<div class="ev"><p class="check">Written by the entry rule, from no single document.</p></div>`}`;
   } else {
@@ -366,21 +373,26 @@ function show(kind, idx, btn) {
 }
 
 function renderSheet() {
-  const srcs = (f) => { const n = f.evidence.filter((e) => e.role !== "conflict").length; return n ? `<b>${n}</b> source${n > 1 ? "s" : ""}` : "rule"; };
+  const srcs = (f) => {
+    if (f.appraiser) return "appraiser input";
+    const n = f.evidence.filter((e) => e.role === "source").length, c = f.evidence.filter((e) => e.role === "corroboration").length;
+    return n ? `<b>${n}</b> source${n > 1 ? "s" : ""}${c ? ` + ${c} corroboration` : ""}` : "rule";
+  };
   $("#keys").innerHTML = D.sheet.slice(0, 3).map((f, i) => `<button class="key" data-i="${i}" aria-pressed="false"><span class="lab">${esc(f.label)}</span><span class="big">${esc(f.display)}</span><span class="src">${srcs(f)}, ${f.cell}</span></button>`).join("");
   document.querySelectorAll("#keys .key").forEach((b) => b.addEventListener("click", () => show("row", +b.dataset.i, b)));
   $("#sheet").innerHTML = D.sheet.map((f, i) => {
     if (i < 3) return "";
-    const n = f.evidence.filter((e) => e.role !== "conflict").length;
-    const long = f.key === "sale_conditions" || f.key === "verification" || f.key === "address";
-    return `<button class="row${long ? " long" : ""}" data-i="${i}" aria-pressed="false">
+    const long = ["sale_conditions", "verification", "address", "gba_reported", "grantor", "grantee", "marketing", "non_realty", "property_rights"].includes(f.key);
+    const val = f.appraiser ? `<span class="pending">Appraiser to choose</span><span class="flag">${f.choices.map((c) => `${c.sf.toLocaleString("en-US")} (${c.basis})`).join(" or ")}. Left blank in the grid until chosen.</span>`
+      : esc(f.display) + (f.conflict ? `<span class="flag">Conflict: ${esc(f.conflict)}.</span>` : "");
+    return `<button class="row${long ? " long" : ""}${f.appraiser ? " appr" : ""}" data-i="${i}" aria-pressed="false">
       <span class="lab">${esc(f.label)}</span>
-      <span class="val">${esc(f.display)}${f.conflict ? `<span class="flag">Conflict: ${esc(f.conflict)}.</span>` : ""}</span>
-      <span class="src">${n ? `<b>${n}</b> source${n > 1 ? "s" : ""}` : "rule"}, ${f.cell}</span></button>`;
+      <span class="val">${val}</span>
+      <span class="src">${srcs(f)}, ${f.cell}</span></button>`;
   }).join("");
   document.querySelectorAll("#sheet .row").forEach((b) => b.addEventListener("click", () => show("row", +b.dataset.i, b)));
   const pp = D.price_per_sf;
-  $("#calc").innerHTML = `Calculated by the workbook, not entered: <b>$${pp.value.toFixed(2)} per sq ft</b> = $${pp.price.toLocaleString("en-US")} ÷ ${pp.gba.toLocaleString("en-US")} sq ft, cell D20, recalculated by Excel. The listing's own $83.17 per sq ft is ${esc(D.notes.mls_price_per_sf.reading.split(":")[0])}: the reduced asking price over 6,000 sq ft, not a sale unit price.`;
+  $("#calc").innerHTML = `<b>No price per sq ft yet.</b> Cell ${pp.cell} divides the sale price by the building area the appraiser picks: ${pp.choices.map((c) => `${c.sf.toLocaleString("en-US")} sq ft (${esc(c.basis)})`).join(" or ")}. Until then Excel leaves it blank, and so does this page. The listing's own $83.17 per sq ft is ${esc(D.notes.mls_price_per_sf.reading.split(":")[0])}: the reduced asking price over 6,000 sq ft, not a sale unit price.`;
   $("#held").innerHTML = D.held.map((e, i) => `<li><button data-i="${i}" aria-pressed="false"><span class="q">“${esc(e.quote.length > 70 ? e.quote.slice(0, 68) + "…" : e.quote)}”</span><span class="why">${esc(D.docs[e.doc].name)}: ${esc(e.reason)}.</span></button></li>`).join("");
   document.querySelectorAll("#held button").forEach((b) => b.addEventListener("click", () => show("held", +b.dataset.i, b)));
 }
@@ -388,7 +400,9 @@ function renderSheet() {
 function tidy(p) {
   return p.replace(/^\/sheets\/[^/]+\/formulas\/(\w+): '(.*)' -> '(.*)'$/, "Formula $1 became $3.")
     .replace(/^\/defined_names\/(\w+)\/refers_to: '(.*)' -> '(.*)'$/, "Name $1 now points to $3.")
-    .replace(/^\/sheets\/(\w+)\/constants\/(\w+): \['\w+', '(.*)'\] -> \['\w+', '(.*)'\]$/, "Constant $1!$2 changed from $3 to $4.");
+    .replace(/^\/sheets\/(\w+)\/constants\/(\w+): \['\w+', '(.*)'\] -> \['\w+', '(.*)'\]$/, "Constant $1!$2 changed from $3 to $4.")
+    .replace(/^\/sheets\/[^/]+\/rows\/(\d+): added \[True.*$/, "Row $1 is now hidden.")
+    .replace(/^input [^!]+!(\w+): expected \['number'.*found \['text'.*$/, "$1 holds text where a number was approved.");
 }
 
 function renderRun() {
@@ -398,17 +412,17 @@ function renderRun() {
   const t = D.tamper;
   const items = [
     ["read", "", `Four documents read into staging, each with its SHA-256 and page text layer. The same listing file dropped in a second time was recognized by its hash and ignored.`, `county record, council minutes (scanned, OCR), two listing pages`],
-    ["checked", "", `${chk.verified + chk.rejected} facts proposed: ${D.model.name.replace("claude-sonnet-5", "Claude Sonnet 5")} read the three PDFs in one call (${D.model.in.toLocaleString("en-US")} tokens in), the county record was mapped field by field. Code verified ${chk.verified} against their cited lines and held back ${chk.rejected}.`, `Each quote must appear on the line it cites, the line must say what the value means, and the value must be what the quote says.`],
+    ["checked", "", `${chk.verified + chk.rejected} facts proposed: ${D.model.name.replace("claude-sonnet-5", "Claude Sonnet 5")} read the text of the three PDFs in one call (the PDF text layer, and Tesseract OCR for the scan; ${D.model.in.toLocaleString("en-US")} tokens in). The county record was mapped field by field by code. Code verified ${chk.verified} and held back ${chk.rejected}.`, `Each quote must appear on the line it cites and the value must be what the quote says. For prices, dates, areas, parcels, zoning, rights and sale conditions (${D.meaning_coverage[0]} of the ${D.meaning_coverage[1]} kinds of fact), the line or its label must also say what the value means; the other kinds (names, addresses, counts) are not checked for meaning.`],
     ["matched", "", `The recorded instrument ${by("transaction_created_from_recorded_instrument").instrument_no} created the sale, covering two parcels. A second row on the same instrument was refused by the database.`, by("refused_by_database").error],
-    ["kept apart", "", `The parcel's ${by("resale_kept_apart").sale_period} sale at $${Number(by("resale_kept_apart").price).toLocaleString("en-US")} became its own transaction on the same property, not a duplicate.`, ""],
-    ["matched", "", `The MLS record joined the sale: same date, same price, same address, lot number matching the parcel id.`, `No instrument number on the listing, so the match rests on those four facts.`],
+    ["kept apart", "", `A prior sale of the front parcel, ${by("resale_kept_apart").sale_period} at $${Number(by("resale_kept_apart").price).toLocaleString("en-US")}, became its own transaction on the same property, not a duplicate.`, `It comes from the county's sale history for the parcel: no instrument number and no parties.`],
+    ["matched", "", `The MLS record joined the sale: same date, same price, same address.`, `No instrument number on the listing. Its lot number 5915 equals the last four digits of the parcel id, a heuristic that supports the match without proving it.`],
     ["held", "", `The council vote was held for review: an authorization, not a closing, 29 days before the recorded sale. The reviewer then linked it as the authorization that preceded the sale.`, ""],
     ["refused", "refused", `Write before approval.`, w[0].reason],
     ["approved", "approved", `Approved for demo entry by the demo operator, bound to one version of the record, its evidence, the input map, the template and the destination cells.`, `Version ${short(by("approved_for_demo_entry").version_sha256)}. Appraiser verification stays pending.`],
-    ["refused", "refused", `Building area changed to 6,000 sq ft after approval, then a write attempted.`, w[1].reason],
+    ["refused", "refused", `Sale price changed to $391,000 after approval, then a write attempted.`, w[1].reason],
     ["resumed", "", `The worker stopped after saving the workbook and before recording completion. The next run found the saved file, recognized its hash, verified it and finished without writing again.`, `A third run of the same approval did nothing: one completed write per approval.`],
-    ["detected", "detected", `Tampering on copies of the delivered file: ${t.slice(1).map((x) => x.test.split(" (")[0]).join("; ")}. Each was detected. Writing into a formula cell was refused.`, t.slice(1).map((x) => tidy(x.detail[0])).join(" ")],
-    ["recalculated", "", `Excel for Mac ${D.excel.version} opened this exact file and recalculated it in full. Price per sq ft agrees to the cent with an independent recomputation; adjusted lines with no adjustments entered stay blank, not zero.`, `Formulas checked on a separate test copy with typed test inputs: ${D.excel.comparison.filter((c) => c.cell.includes("test")).every((c) => c.agree_to_the_cent) ? "all agree to the cent" : "disagreement"}.`],
+    ["detected", "detected", `Tampering on copies of the delivered file: ${t.slice(1).map((x) => x.short).join("; ")}. Each was detected. Writing into a formula cell was refused.`, t.slice(1).map((x) => tidy(x.detail[0])).join(" ")],
+    ["recalculated", "", `Excel for Mac ${D.excel.version} opened this exact file and recalculated it in full. With no building area chosen and no adjustments entered, every calculated line stays blank, not zero.`, `Formulas checked on a separate test copy with typed test inputs (a test area basis, test adjustments): price per sq ft, adjusted price, gross adjustment and indicated value ${D.excel.comparison.filter((c) => c.cell.includes("test")).every((c) => c.agree_to_the_cent) ? "all agree to the cent" : "disagree"} with an independent recomputation.`],
     ["audited", "", `${D.audit.rows} audit events, each chained to the previous one by hash. Update, delete and truncate were refused for all three application roles.`, `Append-only for the tested application roles. An edit made with owner rights still shows: the chain breaks at row ${D.audit.owner_edit.join(", ")}.`],
   ];
   $("#seq").innerHTML = items.map(([o, c, what, det]) => `<li><span class="out ${c}">${esc(o[0].toUpperCase() + o.slice(1))}</span><span class="what">${esc(what)}${det ? `<span class="det">${esc(det)}</span>` : ""}</span></li>`).join("");

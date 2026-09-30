@@ -5,12 +5,21 @@ from comptrace.verify import Registry, check_all, check_fact
 
 def test_recorded_extraction_verdicts(recorded, cited_lines):
     checked = check_all(recorded["extraction"]["facts"], Registry(cited_lines))
-    rejected = {(f["doc"], f["meaning_code"]): f["reason"] for f in checked if f["status"] == "rejected"}
+    rejected = {(f["doc"], f["meaning_code"], f["value"][:12]): f["reason"] for f in checked if f["status"] == "rejected"}
     assert len(checked) == 38 and len(rejected) == 4
-    assert "offer acceptance date" in rejected[("minutes", "offer_acceptance_date")]  # a meeting date, not an acceptance date
-    assert "sold price" in rejected[("mls-coalition", "sold_price")]  # the cited line never says sold
-    assert "providing" in rejected[("mls-cb", "sale_condition")]  # paraphrase adds words
-    assert "not a number" in rejected[("mls-coalition", "parking")]
+    assert "sold price" in rejected[("mls-coalition", "sold_price", "390000")]  # the cited line never says sold
+    assert "sale condition" in rejected[("mls-coalition", "sale_condition", "CLOSED, 628 ")]  # status and days online, not a condition
+    assert "sale condition" in rejected[("mls-cb", "sale_condition", "sale include")]  # what was conveyed, not a condition
+    assert "not a number" in rejected[("mls-coalition", "parking", "Lighted Park")]
+    meeting = next(f for f in checked if f["meaning_code"] == "offer_acceptance_date")
+    assert meeting["status"] == "verified"  # the date printed under MEETING MINUTES of the meeting that voted the offer
+
+
+def test_meaning_check_covers_a_stated_subset():
+    from comptrace.extract import MeaningCode
+    from comptrace.verify import MEANING_WORDS
+    assert set(MEANING_WORDS) < set(MeaningCode.__args__)
+    assert (len(MEANING_WORDS), len(MeaningCode.__args__)) == (15, 24)
 
 
 def test_asking_price_is_not_accepted_as_sold(cited_lines):

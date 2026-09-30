@@ -21,7 +21,8 @@ from comptrace import acceptance, excel_mac, gridmath, writer
 from comptrace.county import county_layer
 from comptrace.pg import LocalPostgres
 from comptrace.pipeline import DESTINATION, Run
-from comptrace.workbook import SHEET, build, input_cells
+from comptrace.workbook import (ADJ_PSF, GBA, GROSS, LAND, LTB, PPSF, PRICE, PROPERTY, REC_PSF, SHEET, TRANSACTIONAL,
+                                VALUE, appraiser_cells, build, input_cells)
 
 ROOT = Path(__file__).resolve().parent
 
@@ -39,27 +40,35 @@ def rewrite_part(src: Path, dst: Path, part: str, fn) -> Path:
 def tamper_tests(TEMPLATE: Path, delivered: Path, allowed: set[str], expected_inputs: dict, tmp: Path) -> list[dict]:
     out = []
     try:
-        writer.patch(TEMPLATE, tmp / "refused.xlsx", SHEET, {"D20": 60.0}, allowed | {"D20"})
-        out.append({"test": "write into a formula cell (D20, price per sq ft)", "expected": "refused", "result": "accepted", "passed": False})
+        writer.patch(TEMPLATE, tmp / "refused.xlsx", SHEET, {f"D{PPSF}": 60.0}, allowed | {f"D{PPSF}"})
+        out.append({"test": f"write into a formula cell (D{PPSF}, price per sq ft)", "expected": "refused", "result": "accepted", "passed": False})
     except writer.WriteRefused as e:
-        out.append({"test": "write into a formula cell (D20, price per sq ft)", "expected": "refused", "result": "refused", "detail": str(e), "passed": True})
+        out.append({"test": f"write into a formula cell (D{PPSF}, price per sq ft)", "expected": "refused", "result": "refused", "detail": str(e), "passed": True})
     sheet = writer.sheet_part(TEMPLATE, SHEET)
     cases = [
-        ("formula edited by hand (D20 multiplied by 1.1)", sheet,
+        (f"formula edited by hand (D{PPSF} multiplied by 1.1)", sheet,
          lambda x: x.replace(b'IF(OR(D9="",D10=""),"",D9/D10)</f>', b'IF(OR(D9="",D10=""),"",D9/D10*1.1)</f>')),
         ("defined name repointed (SqFtPerAcre to Settings!B4), no formula text changed", "xl/workbook.xml",
          lambda x: x.replace(b"Settings!$B$2", b"Settings!$B$4")),
+        (f"row {PPSF} (price per sq ft) hidden, no formula or value changed", sheet,
+         lambda x: x.replace(f'<row r="{PPSF}"'.encode(), f'<row r="{PPSF}" hidden="1"'.encode(), 1)),
+        (f"sale price D{PRICE} rewritten as text instead of a number", sheet,
+         lambda x: x.replace(f'<c r="D{PRICE}" s="8"><v>390000.0</v></c>'.encode(), f'<c r="D{PRICE}" s="8" t="inlineStr"><is><t>390000.0</t></is></c>'.encode())),
         ("protected constant changed (Settings!B2, 43,560 to 43,000), no formula text changed", writer.sheet_part(TEMPLATE, "Settings"),
          lambda x: x.replace(b"<v>43560</v>", b"<v>43000</v>")),
     ]
-    for name, part, fn in cases:
+    short = ["a formula edited by hand", "a defined name repointed", f"row {PPSF} hidden", "the sale price stored as text", "a protected constant changed"]
+    for (name, part, fn), sh in zip(cases, short):
         bad = rewrite_part(delivered, tmp / "tampered.xlsx", part, fn)
         if acceptance.sha256_file(bad) == acceptance.sha256_file(delivered):
             out.append({"test": name, "expected": "detected", "result": "tampering did not apply", "passed": False})
             continue
         r = acceptance.check(TEMPLATE, bad, {SHEET: allowed}, expected_inputs)
-        out.append({"test": name, "expected": "detected", "result": "detected" if not r["ok"] else "not detected",
-                    "detail": r["problems"][:3], "hash_after": r["after"]["protected_sha256"], "passed": not r["ok"]})
+        pd = acceptance.part_diff(TEMPLATE, bad, sheet, allowed)
+        caught = not r["ok"] or not pd["ok"]
+        out.append({"test": name, "short": sh, "expected": "detected", "result": "detected" if caught else "not detected",
+                    "detail": (r["problems"] + pd["problems"])[:3], "manifest_detected": not r["ok"], "part_diff_detected": not pd["ok"],
+                    "hash_after": r["after"]["protected_sha256"], "passed": caught})
     return out
 
 
@@ -161,39 +170,44 @@ def main(use_excel: bool = True, run_dir: Path = ROOT / "run", wb_dir: Path = RO
         run.audit_conn.close()
 
     allowed = set(input_cells("D").values())
-    expected_inputs = {f"{SHEET}!{cell}": (None if entry[field]["value"] is None else
-                                           (f"{entry[field]['value']} 00:00:00" if field == "sale_date" else str(entry[field]["value"])))
+    expected_inputs = {f"{SHEET}!{cell}": acceptance.expected(date.fromisoformat(entry[field]["value"]) if field == "sale_date" else entry[field]["value"])
                        for field, cell in input_cells("D").items()}
     tamper = tamper_tests(TEMPLATE, DELIVERED, allowed, expected_inputs, tmp)
 
-    grid = gridmath.column(entry["sale_price"]["value"], entry["gba_sf"]["value"], entry["land_acres"]["value"])
+    price, land = entry["sale_price"]["value"], entry["land_acres"]["value"]
+    grid = gridmath.column(price, None, land)  # no building area chosen: nothing per square foot exists
     excel = None
-    test_inputs = {"D23": 0.0, "D25": 0.0, "D27": 0.05, "D29": 2.5, "D31": 0.08, "D35": 0.05, "D36": -0.05, "D37": 0.1,
-                   "D38": 0.0, "D39": -0.03, "D40": 0.0, "D41": 0.0, "C10": 6500.0, "C48": 58.5}
+    A = appraiser_cells("D")
+    tr = [A[f"t{r}"] for r, _, _ in TRANSACTIONAL]
+    pr = [A[f"p{r}"] for r, _ in PROPERTY]
+    test_basis = entry["gba_sf"]["choices"][0]["sf"]
+    t_vals = [("pct", 0.0), ("pct", 0.0), ("pct", 0.05), ("usd", 2.5), ("pct", 0.08)]
+    p_vals = [0.05, -0.05, 0.1, 0.0, -0.03, 0.0, 0.0]
+    test_inputs = {A["gba_sf"]: test_basis, **{c: v for c, (_, v) in zip(tr, t_vals)}, **dict(zip(pr, p_vals)),
+                   f"C{GBA}": 6500.0, f"C{REC_PSF}": 58.5}
     writer.patch(DELIVERED, TEST_COPY, SHEET, test_inputs, set(test_inputs))
-    grid_test = gridmath.column(entry["sale_price"]["value"], entry["gba_sf"]["value"], entry["land_acres"]["value"],
-                                [("pct", 0.0), ("pct", 0.0), ("pct", 0.05), ("usd", 2.5), ("pct", 0.08)],
-                                [0.05, -0.05, 0.1, 0.0, -0.03, 0.0, 0.0])
-    refs = [f"{SHEET}!{c}" for c in ("D9", "D10", "D11", "D20", "D21", "D24", "D32", "D42", "D43", "D44", "D45", "C49")] + ["Settings!B6"]
+    grid_test = gridmath.column(price, test_basis, land, t_vals, p_vals)
+    cells = {"ppsf": f"D{PPSF}", "ltb": f"D{LTB}", "adj": f"D{ADJ_PSF}", "gross": f"D{GROSS}", "value": f"C{VALUE}"}
+    refs = [f"{SHEET}!{c}" for c in (f"D{PRICE}", f"D{GBA}", f"D{LAND}", *cells.values())] + ["Settings!B6"]
     if use_excel and excel_mac.available():
         excel = {"delivered": excel_mac.observe(DELIVERED, refs), "test_copy": excel_mac.observe(TEST_COPY, refs)}
         d, t = excel["delivered"]["cells"], excel["test_copy"]["cells"]
+        v = lambda book, key: book[f"{SHEET}!{cells[key]}"]["value"]
         cents = lambda x: round(x * 100) if isinstance(x, float) else x
+        blank = lambda key, what: {"cell": cells[key], "what": what, "excel": v(d, key), "python": "", "agree_to_the_cent": v(d, key) == ""}
         excel["comparison"] = [
-            {"cell": "D20", "what": "price per sq ft", "excel": d[f"{SHEET}!D20"]["value"], "python": grid["price_per_sf"],
-             "agree_to_the_cent": cents(d[f"{SHEET}!D20"]["value"]) == cents(grid["price_per_sf"])},
-            {"cell": "D21", "what": "land-to-building ratio", "excel": d[f"{SHEET}!D21"]["value"], "python": grid["land_to_building"],
-             "agree_to_the_cent": cents(d[f"{SHEET}!D21"]["value"]) == cents(grid["land_to_building"])},
-            {"cell": "D43", "what": "adjusted price per sq ft with no adjustments entered", "excel": d[f"{SHEET}!D43"]["value"], "python": "",
-             "agree_to_the_cent": d[f"{SHEET}!D43"]["value"] == ""},
-            {"cell": "C49", "what": "indicated value with no reconciliation entered", "excel": d[f"{SHEET}!C49"]["value"], "python": "",
-             "agree_to_the_cent": d[f"{SHEET}!C49"]["value"] == ""},
-            {"cell": "D43 (test copy)", "what": "adjusted price per sq ft, test inputs", "excel": t[f"{SHEET}!D43"]["value"], "python": grid_test["adjusted_per_sf"],
-             "agree_to_the_cent": cents(t[f"{SHEET}!D43"]["value"]) == cents(grid_test["adjusted_per_sf"])},
-            {"cell": "D44 (test copy)", "what": "gross adjustment, test inputs", "excel": t[f"{SHEET}!D44"]["value"], "python": grid_test["gross_pct"],
-             "agree_to_the_cent": round(t[f"{SHEET}!D44"]["value"], 6) == round(grid_test["gross_pct"], 6)},
-            {"cell": "C49 (test copy)", "what": "indicated value, test inputs", "excel": t[f"{SHEET}!C49"]["value"], "python": round(58.5 * 6500, -3),
-             "agree_to_the_cent": t[f"{SHEET}!C49"]["value"] == float(round(58.5 * 6500, -3))},
+            blank("ppsf", "price per sq ft, no building area chosen"),
+            blank("ltb", "land-to-building ratio, no building area chosen"),
+            blank("adj", "adjusted price per sq ft, no adjustments entered"),
+            blank("value", "indicated value, no reconciliation entered"),
+            {"cell": cells["ppsf"] + " (test copy)", "what": f"price per sq ft, test basis {test_basis:,.0f} sq ft", "excel": v(t, "ppsf"),
+             "python": grid_test["price_per_sf"], "agree_to_the_cent": cents(v(t, "ppsf")) == cents(grid_test["price_per_sf"])},
+            {"cell": cells["adj"] + " (test copy)", "what": "adjusted price per sq ft, test inputs", "excel": v(t, "adj"),
+             "python": grid_test["adjusted_per_sf"], "agree_to_the_cent": cents(v(t, "adj")) == cents(grid_test["adjusted_per_sf"])},
+            {"cell": cells["gross"] + " (test copy)", "what": "gross adjustment, test inputs", "excel": v(t, "gross"),
+             "python": grid_test["gross_pct"], "agree_to_the_cent": round(v(t, "gross"), 6) == round(grid_test["gross_pct"], 6)},
+            {"cell": cells["value"] + " (test copy)", "what": "indicated value, test inputs", "excel": v(t, "value"),
+             "python": round(58.5 * 6500, -3), "agree_to_the_cent": v(t, "value") == float(round(58.5 * 6500, -3))},
         ]
         excel["delivered_file_is_the_recalculated_file"] = excel["delivered"]["workbook_sha256"] == acceptance.sha256_file(DELIVERED)
 

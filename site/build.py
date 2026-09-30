@@ -1,9 +1,14 @@
 """Build site/dist/ from the recorded run (run/run.json). No network, no API."""
 import json
 import shutil
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+from comptrace.extract import MeaningCode  # noqa: E402
+from comptrace.verify import MEANING_WORDS  # noqa: E402
+from comptrace.workbook import FACT_ROWS, LTB, PPSF  # noqa: E402
 SRC, DIST = ROOT / "site/src", ROOT / "site/dist"
 
 run = json.loads((ROOT / "run/run.json").read_text())
@@ -27,43 +32,57 @@ CROP_FOR = {("minutes", "accepted_offer_price"): "motion", ("minutes", "sale_con
             ("minutes", "offer_acceptance_date"): "header"}
 
 
+CITED = {sp["id"]: sp["text"] for d in json.loads((ROOT / "fixtures/cited_lines.json").read_text()) for pg in d["pages"] for sp in pg["spans"]}
+
+
 def evidence(fid, role="source"):
     f = facts[fid]
+    nxt = None
+    if role == "conflict" and f["span_ids"] and ":l" in f["span_ids"][-1]:
+        head, n = f["span_ids"][-1].rsplit(":l", 1)
+        nxt = CITED.get(f"{head}:l{int(n) + 1}")
     page = None
     if f["span_ids"] and ":p" in f["span_ids"][0]:
         page = int(f["span_ids"][0].split(":p")[1].split(":")[0])
     crop = crops.get(CROP_FOR.get((f["doc"], f["meaning_code"])), None)
     return {"id": fid, "doc": f["doc"], "meaning": f["meaning"], "value": f["value"], "quote": f["quote"], "page": page,
             "spans": f["span_ids"], "status": f["status"], "reason": f["reason"], "role": role,
-            "img": ("img/" + crop["file"]) if crop else None, "derived": f.get("derived_from")}
+            "img": ("img/" + crop["file"]) if crop else None, "derived": f.get("derived_from"), "next": nxt}
 
 
 FIELDS = [
     ("sale_price", "Sale price", "D9", lambda v: f"${v:,.0f}"),
     ("sale_date", "Sale date", "D8", lambda v: f"{int(v[5:7])}/{int(v[8:10])}/{v[:4]}"),
     ("instrument", "Recorded instrument", "D7", str),
+    ("gba_sf", "Building area for comparison", "D10", lambda v: "Appraiser to choose"),
+    ("gba_reported", "Building area as reported", "D11", str),
+    ("grantor", "Grantor", "D15", str),
+    ("grantee", "Grantee", "D16", str),
     ("parcels", "Parcels conveyed", "D6", lambda v: v.replace("; ", "\n")),
     ("address", "Address", "D5", str),
-    ("gba_sf", "Gross building area", "D10", lambda v: f"{v:,.0f} sq ft above grade"),
-    ("land_acres", "Land area", "D11", lambda v: f"{v:.2f} acres, two parcels"),
-    ("year_built", "Year built", "D12", lambda v: f"{v:.0f}"),
-    ("zoning", "Zoning", "D13", str),
-    ("property_rights", "Property rights", "D14", str),
-    ("sale_conditions", "Conditions of sale", "D15", str),
-    ("verification", "Verification", "D17", str),
+    ("land_acres", "Land area", "D12", lambda v: f"{v:.2f} acres, two parcels"),
+    ("year_built", "Year built", "D13", lambda v: f"{v:.0f}"),
+    ("zoning", "Zoning", "D14", str),
+    ("property_rights", "Property rights", "D17", str),
+    ("sale_conditions", "Conditions of sale", "D18", str),
+    ("marketing", "Marketing history", "D19", str),
+    ("non_realty", "Non-realty items", "D20", str),
+    ("verification", "Verification", "D22", str),
 ]
 sheet = []
 for key, label, cell, fmt in FIELDS:
     e = entry[key]
     cid = e.get("conflict", {}).get("fact")
     ev = [evidence(i) for i in e["facts"] if i != cid]
-    if "conflict" in e:
-        ev.append(evidence(e["conflict"]["fact"], "conflict"))
+    ev += [evidence(i, "corroboration") for i in e.get("corroboration", [])]
+    if cid:
+        ev.append(evidence(cid, "conflict"))
     sheet.append({"key": key, "label": label, "cell": cell, "display": fmt(e["value"]), "rule": e["rule"], "evidence": ev,
-                  "conflict": e.get("conflict", {}).get("note"), "raw": e["value"]})
+                  "conflict": e.get("conflict", {}).get("note"), "raw": e["value"], "choices": e.get("choices"),
+                  "appraiser": key == "gba_sf"})
 
 excel = run["excel"]
-d20 = excel["delivered"]["cells"]["Sales Comparison!D20"]
+d25 = excel["delivered"]["cells"][f"Sales Comparison!D{PPSF}"]
 held = [evidence(f["id"]) for f in run["facts"] if f["status"] == "rejected"]
 steps = {s["n"]: s for s in run["steps"]}
 acc = run["acceptance"]
@@ -71,15 +90,13 @@ audit = next(s for s in run["steps"] if s["step"] == "audit")
 tamper = run["tamper_tests"]
 model = next(s for s in run["steps"] if s["step"] == "model_call")
 
-grid_rows = [(5, "Address"), (6, "Parcel(s)"), (7, "Recorded instrument"), (8, "Sale date"), (9, "Sale price ($)"),
-             (10, "Gross building area (sq ft, above grade)"), (11, "Land area (acres)"), (12, "Year built"), (13, "Zoning"),
-             (14, "Property rights conveyed (reported)"), (15, "Conditions of sale (reported facts)"), (16, "Sources"), (17, "Verification"),
-             (20, "Sale price per sq ft of gross building area"), (21, "Land-to-building ratio"), (23, "Property rights conveyed (%)"),
-             (24, "Adjusted price per sq ft"), (43, "Adjusted price per sq ft, after all adjustments"), (49, "Indicated value, rounded")]
+grid_rows = [(r, lab) for r, _, lab, _ in FACT_ROWS] + [(PPSF, "Sale price per sq ft of the chosen building area"), (LTB, "Land-to-building ratio")]
 def cellview(key, v):
+    if v is None:
+        return ""
     if key == "sale_date":
         return f"{v[5:7]}/{v[8:10]}/{v[:4]}"
-    if key in ("sale_price", "gba_sf"):
+    if key == "sale_price":
         return f"{v:,.0f}"
     if key == "land_acres":
         return f"{v:.2f}"
@@ -89,17 +106,16 @@ def cellview(key, v):
 
 
 grid_values = {f["cell"]: cellview(f["key"], f["raw"]) for f in sheet}
-grid_values["D16"] = entry["sources"]["value"]
-grid_values["D20"] = f"${d20['value']:,.2f}"
-land_ratio = excel["delivered"]["cells"]["Sales Comparison!D21"]["value"]
-grid_values["D21"] = f"{land_ratio:.2f}"
+grid_values["D21"] = entry["sources"]["value"]
+grid_values["D10"] = ""
 grid = [{"row": r, "label": lab, "value": grid_values.get(f"D{r}", ""),
-         "kind": "fact" if r <= 17 else ("formula" if r in (20, 21, 24, 43, 49) else "appraiser")} for r, lab in grid_rows]
+         "kind": "appraiser" if r == 10 else ("fact" if r <= 22 else "formula")} for r, lab in grid_rows]
 
 data = {
     "sheet": sheet, "held": held, "grid": grid, "notes": notes,
     "docs": DOC,
-    "price_per_sf": {"value": d20["value"], "formula": d20["formula"], "price": entry["sale_price"]["value"], "gba": entry["gba_sf"]["value"]},
+    "price_per_sf": {"excel_value": d25["value"], "formula": d25["formula"], "cell": f"D{PPSF}", "choices": entry["gba_sf"]["choices"]},
+    "meaning_coverage": [len(MEANING_WORDS), len(MeaningCode.__args__)],
     "files": run["files"],
     "hashes": {"before": acc["manifest"]["before"]["protected_sha256"], "after": acc["manifest"]["after"]["protected_sha256"],
                "counts": acc["manifest"]["before"]["counts"], "parts": len(acc["part_diff"]["parts"]),
